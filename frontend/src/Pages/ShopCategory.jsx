@@ -1,11 +1,11 @@
 import React from 'react'
 
-const ShopCategary = () => {
+function ShopCategory() {
   return (
     <div>
-        
+      
     </div>
   )
 }
 
-export default ShopCategary
+export default ShopCategory

@@ -1,7 +1,13 @@
 
 import './App.css';
 import Navbar from './Components/Navbar/Navbar';
-import {BrowserRouter,Routes,Roure, Route} from 'react-router-dom';
+import {BrowserRouter,Routes,Route} from 'react-router-dom';
+import Shop from './Pages/Shop';
+import ShopCategory from './Pages/ShopCategory';
+import Product from './Pages/Product';
+import Cart from './Pages/Cart';  
+import LoginSingup from './Pages/LoginSingup';
+
 
 function App() {
   return (
