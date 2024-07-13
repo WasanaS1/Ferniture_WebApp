@@ -10,7 +10,7 @@ const Hero = () => {
             <h2>New Arrivals Only</h2>
             <div>
                 <div className='hero-hand-icon'>
-                    <p>new</p>
+                    <p>NEW</p>
                     <FaHandSparkles className="sparkle-icon" />
                 </div>
                 <p>Collections</p>
