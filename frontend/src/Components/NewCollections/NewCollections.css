@@ -18,7 +18,9 @@
 }
 .collections{
     display: grid;
+    max-width: 1200px;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     margin-top: 50px;
     gap: 30px;
+    width: 100%;
 }
