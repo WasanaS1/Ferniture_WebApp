@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import './Navbar.css'
+import './Navbar.css';
 
-import logo from '../Assests/logo.png'
+import logo from '../Assests/logo.png';
 import { FaCommentDollar, FaOpencart } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
-  const [menu,setMenu] = useState("shop")
+  const [menu,setMenu] = useState("Furniture");
   return (
     <div className='navbar'>
       <div className='nav-logo'>
@@ -14,10 +14,10 @@ const Navbar = () => {
         <p>UniqueYou</p>
       </div>
       <ul className='nav-menu'>
-        <li onClick={()=>{setMenu("Shop")}}><Link style={{textDecoration:'none'}} to='/'>Shop</Link>{menu==="Shop"?<hr/>:<></>}</li>
-        <li onClick={()=>{setMenu("Kitchen")}}><Link style={{textDecoration:'none'}} to='/Kitchen'>Kitchen</Link>{menu==="Kitchen"?<hr/>:<></>}</li>
-        <li onClick={()=>{setMenu("Leving area")}}><Link style={{textDecoration:'none'}} to='/Leving area'>Leving area</Link>{menu==="Leving area"?<hr/>:<></>}</li>
-        <li onClick={()=>{setMenu("Room")}}><Link style={{textDecoration:'none'}} to='/Room'>Room</Link>{menu==="Room"?<hr/>:<></>}</li>
+        <li onClick={()=>{setMenu("Furniture")}}><Link style={{textDecoration:'none'}} to='/'>Furniture</Link>{menu==="Furniture"?<hr/>:<></>}</li>
+        <li onClick={()=>{setMenu("Indoor")}}><Link style={{textDecoration:'none'}} to='/Indoor'>Indoor</Link>{menu==="Indoor"?<hr/>:<></>}</li>
+        <li onClick={()=>{setMenu("Outdoor")}}><Link style={{textDecoration:'none'}} to='/Outdoor'>Outdoor</Link>{menu==="Outdoor"?<hr/>:<></>}</li>
+        <li onClick={()=>{setMenu("Decorative")}}><Link style={{textDecoration:'none'}} to='/Decorative'>Decorative</Link>{menu==="Decorative"?<hr/>:<></>}</li>
       </ul>
       <div className='nav-login-cart'>
         <Link to='/login'><button>Login</button></Link>

@@ -1,7 +1,7 @@
 import React from 'react'
 import Hero from '../Components/Hero/Hero'
 
-const Shop = () => {
+const Furniture = () => {
   return (
     <div>
         <Hero/>
@@ -9,4 +9,4 @@ const Shop = () => {
   )
 }
 
-export default Shop
+export default Furniture
