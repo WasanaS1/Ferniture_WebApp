@@ -8,7 +8,9 @@ import Product from './Pages/Product';
 import Cart from './Pages/Cart';  
 import LoginSingup from './Pages/LoginSingup';
 import Footer from './Components/Footer/Footer';
-
+import indoor_banner from './Components/Assests/banner_indoor.jpeg'
+import outdoor_banner from './Components/Assests/banner_outdoor.jpeg'
+import deco_banner from './Components/Assests/banner_deco.jpeg'
 
 function App() {
   return (
@@ -18,9 +20,9 @@ function App() {
         <Routes>
           <Route path='/' element={<Furniture/>}/>
 
-          <Route path='/Indoor' element={<FurnitureCategory category="Indoor"/>}/>
-          <Route path='/Outdoor' element={<FurnitureCategory category="Outdoor"/>}/>
-          <Route path='/Decorative' element={<FurnitureCategory category="Decorative"/>}/>
+          <Route path='/Indoor' element={<FurnitureCategory banner={indoor_banner} category="Indoor"/>}/>
+          <Route path='/Outdoor' element={<FurnitureCategory banner={outdoor_banner} category="Outdoor"/>}/>
+          <Route path='/Decorative' element={<FurnitureCategory banner={deco_banner} category="Decorative"/>}/>
           
           <Route path='/product' element={<Product/>}>
             <Route path=':productId' element={<Product/>}/>
