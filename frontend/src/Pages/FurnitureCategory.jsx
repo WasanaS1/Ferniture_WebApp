@@ -27,6 +27,9 @@ const FurnitureCategory = (props) =>{
             }
           })}
       </div>
+      <div className="furniturecategory-loadmore">
+        More furnitures
+      </div>
     </div>
   )
 }
