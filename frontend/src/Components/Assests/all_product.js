@@ -1,4 +1,6 @@
 import p1_image from './product_1.png';
+import p2_image from './product_2.jpeg';
+import p3_image from './product_3.jpeg';
 
 let all_product = [
     {
@@ -12,7 +14,7 @@ let all_product = [
         id: 2,
         name: "name",
         category: "Outdoor",
-        image: p1_image,
+        image: p2_image,
         new_price: 50.00,
         old_price: 80.59,
     },
@@ -80,7 +82,7 @@ let all_product = [
         id: 11,
         name: "name",
         category: "Decorative",
-        image: p1_image,
+        image: p3_image,
         new_price: 50.00,
         old_price: 80.59,
     },
