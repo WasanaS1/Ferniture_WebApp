@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import './ProductDisplay.css'
 import { MdOutlineStar } from "react-icons/md";
 import { MdOutlineStarOutline } from "react-icons/md";
+import { FurnitureContext } from '../../Context/FurnitureContext';
 
 const ProductDisplay = (props) => {
     const {product} =props;
+    const {addToCart} = useContext(FurnitureContext);
+
   return (
     <div className='productdisplay'>
         <div className="productdisplay-left">
@@ -38,7 +41,7 @@ const ProductDisplay = (props) => {
                     <div>18" W x 20" D x 38" H</div>
                 </div>
             </div>
-            <button>Add To Cart</button>
+            <button onClick={()=>{addToCart(product.id)}}>Add To Cart</button>
             <p className='productdisplay-right-category'><span>Category :</span>Living Room Furniture,Dining Room Furniture</p>
             <p className='productdisplay-right-category'><span>Tag :</span>Solid Wood,Modern Design,Ergonomic</p>
         
