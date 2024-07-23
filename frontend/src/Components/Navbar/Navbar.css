@@ -3,6 +3,7 @@
     justify-content: space-around;
     padding: 16px;
     box-shadow: 0 1px 3px -2px rgba(1, 81, 24, 0.553);
+    align-items: center;
 }
 .nav-logo{
     display: flex;
@@ -77,6 +78,8 @@
 .FaOpencart-icon{
     scale: 2;
 }
+/* ..media Query............... */
+.nav-dropdown{display: none;}
 @media(max-width:1280px){
     .navbar{
         padding: 12px 50px;
@@ -125,5 +128,32 @@
     .nav-cart-count{
         width: 18px;
         height: 18px;
+    }
+}
+
+@media (max-width:800px) {
+    .navbar{
+        padding: 10px;
+    }
+    .nav-dropdown{
+        display: block;
+        width: 30px;
+        rotate: -90deg;
+        transition: 0.5s;
+    }
+    .nav-menu{
+        display: none;
+        height: 80px;
+        width: 100%;
+        position: absolute;
+        background-color: white;
+        justify-content: center;
+        top:50px;
+    }
+    .nav-menu-visible{
+        display: flex;
+    }
+    .open{
+        transform: rotate(90deg);
     }
 }
