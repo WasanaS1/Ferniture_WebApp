@@ -42,6 +42,43 @@ app.post("/upload",upload.single('product'),(req,res)=>{
     })
 })
 
+//Schema for product to mongoose
+
+const Product = mongoose.model("Product",{
+    id:{
+        type: Number,
+        required:true,
+    },
+    name:{
+        type:String,
+        required:true,
+    },
+    image:{
+        type:String,
+        required:true,
+    },
+    category:{
+        type:String,
+        required:true,
+    },
+    new_price:{
+        type:Number,
+        required:true,
+    },
+    old_price:{
+        type:Number,
+        required:true,
+    },
+    date:{
+        type:Date,
+        default:Date.now,
+    },
+    avilable:{
+        type:Boolean,
+        default:true,
+    },
+})
+
 app.listen(port,(error)=>{
     if(!error){
         console.log("Sever Running "+port)
