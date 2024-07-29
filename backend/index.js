@@ -35,7 +35,7 @@ const upload = multer({storage:storage})
 
 app.use('/images',express.static('upload/images'))//to provide image url.(mount images endpoint)
 
-app.post("/upload",upload.single('product'),(req,res)=>{
+app.post("/upload",upload.single('product'),(req,res)=>{//API image upload
     res.json({
         success:1,
         Image_url:`http://localhost:${port}/images/${req.file.filename}`
@@ -80,7 +80,7 @@ const Product = mongoose.model("Product",{
 })
 
 
-app.post('/addproduct',async(req,res)=>{
+app.post('/addproduct',async(req,res)=>{//API add product
     let products = await Product.find({});//get product inn array
     let id;
     if (products.length>0){
@@ -107,6 +107,16 @@ app.post('/addproduct',async(req,res)=>{
     res.json({
         success:true,
         name:req.body.name,    
+    })
+})
+
+//API delete product
+app.post('/removeproduct',async(req,res)=>{
+    await Product.findOneAndDelete({id:req.body.id});
+    console.log("Remove");
+    res.json({
+        success:true,
+        name:req.body.name
     })
 })
 
