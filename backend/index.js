@@ -38,7 +38,7 @@ app.use('/images',express.static('upload/images'))//to provide image url.(mount 
 app.post("/upload",upload.single('product'),(req,res)=>{//API image upload
     res.json({
         success:1,
-        Image_url:`http://localhost:${port}/images/${req.file.filename}`
+        Image_url:`http://localhost:${port}/images/${req.file.filename}`,
     })
 })
 
