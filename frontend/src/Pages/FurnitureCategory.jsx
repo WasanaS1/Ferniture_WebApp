@@ -13,8 +13,9 @@ const FurnitureCategory = (props) =>{
         <p>
           <span>Showing 1-12</span> out of 36 products
         </p>
-        <div className="furniturecategegaory-sort">
-          Sort by <IoIosArrowDropdown />
+        <div className="furniturecategory-sort">
+          Sort by 
+          <IoIosArrowDropdown />
         </div>
       </div>
       <div className="furniturecategory-products">
