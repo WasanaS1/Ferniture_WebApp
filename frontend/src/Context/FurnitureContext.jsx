@@ -1,17 +1,28 @@
-import React, { createContext, useState } from "react";
-import all_product from '../Components/Assests/all_product';
+import React, { createContext, useEffect, useState } from "react";
+// import all_product from '../Components/Assests/all_product';
 
 
 export const FurnitureContext = createContext(null);
 const getDefaultCart = () => {
     let cart = {};
-    for (let index = 0; index <all_product.length+1;index++){
+    for (let index = 0; index <300+1;index++){
         cart[index] = 0;
     }
     return cart;
 }
 
 const FurnitureContextProvider = (props)=>{
+
+    //for backend
+    const [all_product,setAll_Product] = useState([]);
+
+    useEffect(()=>{
+        fetch('http://localhost:4000/alllprducts')
+        .then((response)=>response.json())
+        .then((data)=>setAll_Product(data))
+    },[])
+
+    //forntend
     const [cartItems,setCartItems] = useState(getDefaultCart());
     
     const addToCart = (itemId) => {
