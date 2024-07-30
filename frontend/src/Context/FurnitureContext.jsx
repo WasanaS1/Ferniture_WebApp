@@ -15,15 +15,30 @@ const FurnitureContextProvider = (props)=>{
 
     //for backend
     const [all_product,setAll_Product] = useState([]);
+    const [cartItems,setCartItems] = useState(getDefaultCart());
 
     useEffect(()=>{
         fetch('http://localhost:4000/alllprducts')
         .then((response)=>response.json())
         .then((data)=>setAll_Product(data))
+
+        if(localStorage.getItem('auth-token')){
+            fetch('http://localhost:4000/getcart',{
+                method:'POST',
+                headers:{
+                    Accept:'application/form-data',
+                    'auth-token':`${localStorage.getItem('auth-token')}`,
+                    'Content-Type':'application/json',
+                },
+                body:"",
+            })
+            .then((respons)=>respons.json())
+            .then((data)=>setCartItems(data));
+        }
     },[])
 
     //forntend
-    const [cartItems,setCartItems] = useState(getDefaultCart());
+    
     
     const addToCart = (itemId) => {
         setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
@@ -45,6 +60,19 @@ const FurnitureContextProvider = (props)=>{
     }
     const removeFromCart = (itemId) => {
         setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
+        if(localStorage.getItem('auth-token')){
+            fetch('http://localhost:4000/removefromcart',{
+                method:'POST',
+                headers:{
+                    Accept:'application/form-data',
+                    'auth-token':`${localStorage.getItem('auth-token')}`,
+                    'Content-Type':'application/json',
+                },
+                body:JSON.stringify({"itemId":itemId}),
+            })
+            .then((respons)=>respons.json())
+            .then((data)=>console.log(data));
+        }
     }
 
     const getTotalCartAmount = () => {
