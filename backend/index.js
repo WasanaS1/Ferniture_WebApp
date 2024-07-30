@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");//get access express with backend
 const cors = require("cors");
+const { type } = require("os");
 
 app.use(express.json());//data pass as json code
 app.use(cors());//connect express using 4000 port
@@ -126,6 +127,57 @@ app.get('/alllprducts',async(req,res)=>{
     console.log("All Product Fetched");
     res.send(product);
 })
+
+//schema creating for user model
+const Users = mongoose.model('Users',{
+    name:{
+        type:String,
+    },
+    email:{
+        type:String,
+        unique:true,
+    },
+    password:{
+        type:String,
+    },
+    cartData:{
+        type:object,
+    },
+    date:{
+        type:Date,
+        default:Date.now,
+    }
+})
+
+//Endpoint for regresting user
+app.post('./signup',async(req,res)=>{
+    let check = await Users.findOne({email:req.body.email});
+    if(check){
+        return res.status(400).json({success:false,errors:"exixting user found with same email address"})
+    }
+    let cart = {};
+    for (let i=0; i<300;i++){
+        cart[i] = 0;
+    }
+    const user = new Users({
+        name:req.body.username,
+        email:req.body.email,
+        password:req.body.password,
+        cartdata:cart,
+    })
+    await user.save();
+
+    //gwt authentication
+    const data = {
+        user:{
+            id:user.id
+        }
+    }
+
+    const token = jwt.sign(data,'select_ecom');
+    res.json ({success:true,token})
+})
+
 
 app.listen(port,(error)=>{
     if(!error){
