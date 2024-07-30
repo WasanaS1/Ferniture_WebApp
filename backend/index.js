@@ -141,7 +141,7 @@ const Users = mongoose.model('Users',{
         type:String,
     },
     cartData:{
-        type:object,
+        type:Object,
     },
     date:{
         type:Date,
@@ -150,10 +150,10 @@ const Users = mongoose.model('Users',{
 })
 
 //Endpoint for regresting user
-app.post('./signup',async(req,res)=>{
+app.post('/signup',async(req,res)=>{
     let check = await Users.findOne({email:req.body.email});
     if(check){
-        return res.status(400).json({success:false,errors:"exixting user found with same email address"})
+        return res.status(400).json({success:false,errors:"existing user found with same email address"})
     }
     let cart = {};
     for (let i=0; i<300;i++){
@@ -163,19 +163,42 @@ app.post('./signup',async(req,res)=>{
         name:req.body.username,
         email:req.body.email,
         password:req.body.password,
-        cartdata:cart,
+        cartData:cart,
     })
     await user.save();
 
-    //gwt authentication
+    //jwt authentication
     const data = {
         user:{
             id:user.id
         }
     }
 
-    const token = jwt.sign(data,'select_ecom');
+    const token = jwt.sign(data,'secret_ecom');
     res.json ({success:true,token})
+})
+
+//Enpoint for user loging
+app.post('/login',async(req,res)=>{
+    let user = await Users.findOne({email:req.body.email});
+    if(user){
+        const passCompare = req.body.password === user.password;
+        if(passCompare){
+            const data = {
+                user :{
+                    id:user.id
+                }
+            }
+            const token =jwt.sign(data,'secret_ecom');
+            res.json({success:true,token});
+        }
+        else{
+            res.json({success:false,errors:"Wrog Password"});
+        }
+    }
+    else{
+        res.json({success:false,errors:"Wrong Email"});
+    }
 })
 
 
