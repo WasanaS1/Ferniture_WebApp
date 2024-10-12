@@ -1,4 +1,4 @@
-const port = 4000;//express server run due to this
+const port = process.env.PORT || 4000;//express server run due to this
 // import dependency
 const express = require("express");
 const app = express();
