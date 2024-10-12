@@ -1,3 +1,5 @@
+
+require("dotenv").config();
 const port = process.env.PORT || 4000;//express server run due to this
 // import dependency
 const express = require("express");
@@ -13,7 +15,7 @@ app.use(express.json());//data pass as json code
 app.use(cors());//connect express using 4000 port
 
 //initialized data base (create database connection with mongodb)
-mongoose.connect("mongodb+srv://wishyCode:1234@cluster0.bewpwrl.mongodb.net/e-commerce");
+mongoose.connect(process.env.MONGO_DB_URL);
 
 //API creation
 
