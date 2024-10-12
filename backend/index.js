@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");//get access express with backend
 const cors = require("cors");
+const { type } = require("os");
 
 app.use(express.json());//data pass as json code
 app.use(cors());//connect express using 4000 port
@@ -38,7 +39,7 @@ app.use('/images',express.static('upload/images'))//to provide image url.(mount 
 app.post("/upload",upload.single('product'),(req,res)=>{//API image upload
     res.json({
         success:1,
-        Image_url:`http://localhost:${port}/images/${req.file.filename}`
+        Image_url:`http://localhost:${port}/images/${req.file.filename}`,
     })
 })
 
@@ -118,6 +119,140 @@ app.post('/removeproduct',async(req,res)=>{
         success:true,
         name:req.body.name
     })
+})  
+
+//API get all product
+app.get('/alllprducts',async(req,res)=>{
+    let product = await Product.find({});
+    console.log("All Product Fetched");
+    res.send(product);
+})
+
+//schema creating for user model
+const Users = mongoose.model('Users',{
+    name:{
+        type:String,
+    },
+    email:{
+        type:String,
+        unique:true,
+    },
+    password:{
+        type:String,
+    },
+    cartData:{
+        type:Object,
+    },
+    date:{
+        type:Date,
+        default:Date.now,
+    }
+})
+
+//Endpoint for regresting user
+app.post('/signup',async(req,res)=>{
+    let check = await Users.findOne({email:req.body.email});
+    if(check){
+        return res.status(400).json({success:false,errors:"existing user found with same email address"})
+    }
+    let cart = {};
+    for (let i=0; i<300;i++){
+        cart[i] = 0;
+    }
+    const user = new Users({
+        name:req.body.username,
+        email:req.body.email,
+        password:req.body.password,
+        cartData:cart,
+    })
+    await user.save();
+
+    //jwt authentication
+    const data = {
+        user:{
+            id:user.id
+        }
+    }
+
+    const token = jwt.sign(data,'secret_ecom');
+    res.json ({success:true,token})
+})
+
+//Enpoint for user loging
+app.post('/login',async(req,res)=>{
+    let user = await Users.findOne({email:req.body.email});
+    if(user){
+        const passCompare = req.body.password === user.password;
+        if(passCompare){
+            const data = {
+                user :{
+                    id:user.id
+                }
+            }
+            const token =jwt.sign(data,'secret_ecom');
+            res.json({success:true,token});
+        }
+        else{
+            res.json({success:false,errors:"Wrog Password"});
+        }
+    }
+    else{
+        res.json({success:false,errors:"Wrong Email"});
+    }
+})
+
+//endpoint for newcollection
+app.get('/newcollection',async(req,res)=>{
+    let products = await Product.find({});
+    let newcollection = products.slice(1).slice(-8);
+    console.log("NewCollction Fetched");
+    res.send(newcollection);
+})
+
+//creating middleware to fetch user dor cartitem
+    const fetchuser = async(req,res,next)=>{
+        const token = req.header('auth-token');
+        if(!token){
+            res.status(401).send({errors:"Please authenticate using valid token"})
+        }
+        else{
+            try{
+                const data = jwt.verify(token,'secret_ecom');
+                req.user = data.user;
+                next();
+            }catch(error){
+                res.status(401).send({errors:"Please authenticate using valid token"})
+            }
+        }
+    }
+
+//endpoint for cart
+app.post('/addtocart',fetchuser,async(req,res)=>{
+    // console.log(req.body,req.user);
+    console.log("Added",req.body.itemId);
+    let userData = await Users.findOne({_id:req.user.id});
+    userData.cartData[req.body.itemId] += 1;
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData});
+    res.send("Added");
+
+})
+
+//remove cart
+app.post('/removefromcart',fetchuser,async(req,res)=>{
+    console.log("Removed",req.body.itemId);
+    let userData = await Users.findOne({_id:req.user.id});
+    if(userData.cartData[req.body.itemId]>0)
+    userData.cartData[req.body.itemId] -= 1;
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData});
+    res.send("Removed");
+
+})
+
+//get cart data
+app.post('/getcart',fetchuser,async(req,res)=>{
+    console.log("GetCart");
+    let userData = await Users.findOne({_id:req.user.id});
+    res.json(userData.cartData);
 })
 
 app.listen(port,(error)=>{
