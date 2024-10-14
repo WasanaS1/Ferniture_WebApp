@@ -53,7 +53,7 @@ app.use('/images', express.static('upload/images')); // Serve images
 // Upload endpoint for images
 app.post("/upload", upload.single('product'), (req, res) => {
     const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://ferniture-backend.onrender.com/images/' 
+        ? 'https://ferniture-webapp-backend.onrender.com/images/' 
         : `http://localhost:${port}/images/`;
 
     res.json({
