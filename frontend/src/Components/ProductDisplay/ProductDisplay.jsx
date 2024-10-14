@@ -8,6 +8,10 @@ const ProductDisplay = (props) => {
     const {product} =props;
     const {addToCart} = useContext(FurnitureContext);
 
+    if (!product || !product.image || !product.name) {
+        return <div>Loading...</div>; 
+    }
+
   return (
     <div className='productdisplay'>
         <div className="productdisplay-left">
