@@ -12,7 +12,23 @@ const cors = require("cors");
 const { type } = require("os");
 
 app.use(express.json());//data pass as json code
-app.use(cors());//connect express using 4000 port
+const allowedOrigins = [
+    'https://ferniture-webapp-frontend.onrender.com'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or Postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const message = `CORS policy does not allow access from ${origin}`;
+            return callback(new Error(message), false);
+        }
+        return callback(null, true);
+    },
+    methods: 'GET,POST,PUT,DELETE', // Specify methods allowed
+    credentials: true // Allow credentials if necessary
+}));
 
 //initialized data base (create database connection with mongodb)
 mongoose.connect(process.env.MONGO_DB_URL);
