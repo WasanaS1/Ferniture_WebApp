@@ -54,12 +54,17 @@ const upload = multer({storage:storage})
 
 app.use('/images',express.static('upload/images'))//to provide image url.(mount images endpoint)
 
-app.post("/upload",upload.single('product'),(req,res)=>{//API image upload
+// Upload endpoint for images
+app.post("/upload", upload.single('product'), (req, res) => {
+    const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ferniture-backend.onrender.com/images/' 
+        : `http://localhost:${port}/images/`;
+
     res.json({
-        success:1,
-        Image_url:`http://localhost:${port}/images/${req.file.filename}`,
-    })
-})
+        success: 1,
+        Image_url: `${baseUrl}${req.file.filename}`,
+    });
+});
 
 //Schema for product to mongoose
 
