@@ -16,14 +16,15 @@ const FurnitureContextProvider = (props)=>{
     //for backend
     const [all_product,setAll_Product] = useState([]);
     const [cartItems,setCartItems] = useState(getDefaultCart());
+    const url ='https://ferniture-webapp-backend.onrender.com'
 
     useEffect(()=>{
-        fetch('http://localhost:4000/alllprducts')
+        fetch(`${url}/alllprducts`)
         .then((response)=>response.json())
         .then((data)=>setAll_Product(data))
 
         if(localStorage.getItem('auth-token')){
-            fetch('http://localhost:4000/getcart',{
+            fetch(`${url}/getcart`,{
                 method:'POST',
                 headers:{
                     Accept:'application/form-data',
@@ -44,7 +45,7 @@ const FurnitureContextProvider = (props)=>{
         setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
         //formbackend
         if(localStorage.getItem('auth-token')){
-            fetch('http://localhost:4000/addtocart',{
+            fetch(`${url}/addtocart`,{
                 method:'POST',
                 headers:{
                     Accept:'application/form-data',
@@ -61,7 +62,7 @@ const FurnitureContextProvider = (props)=>{
     const removeFromCart = (itemId) => {
         setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
         if(localStorage.getItem('auth-token')){
-            fetch('http://localhost:4000/removefromcart',{
+            fetch(`${url}/removefromcart`,{
                 method:'POST',
                 headers:{
                     Accept:'application/form-data',

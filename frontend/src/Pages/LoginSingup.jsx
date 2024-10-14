@@ -19,7 +19,7 @@ const LoginSingup = () => {
   const login = async()=>{
     console.log("Login Function Executed",formData);
     let responsData;
-    await fetch('http://localhost:4000/login',{
+    await fetch('https://ferniture-webapp-backend.onrender.com/login',{
       method:'POST',
       headers:{
         Accept:'application/form-data',
@@ -39,7 +39,7 @@ const LoginSingup = () => {
   const signup = async()=>{
     console.log("Signup Function Executed",formData);
     let responsData;
-    await fetch('http://localhost:4000/signup',{
+    await fetch('https://ferniture-webapp-backend.onrender.com/signup',{
       method:'POST',
       headers:{
         Accept:'application/form-data',
