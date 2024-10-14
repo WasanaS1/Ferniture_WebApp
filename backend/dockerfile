@@ -1,0 +1,22 @@
+#base image
+FROM node:20-alpine
+
+RUN npm install -g nodemon
+
+
+#working derectory
+WORKDIR /app
+
+#copy package.json and package-lock.json file
+COPY package*.json ./
+
+#install the dependencies
+RUN npm install
+
+#copy the file
+COPY . .
+
+EXPOSE 5000
+
+#run the app
+CMD [ "npm","start" ]

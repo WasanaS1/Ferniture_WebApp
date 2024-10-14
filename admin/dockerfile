@@ -1,0 +1,23 @@
+#base image
+FROM node:20-alpine
+
+#working derectory
+WORKDIR /app
+
+#copy package.json and package-lock.json file
+COPY package*.json ./
+
+#install the dependencies
+RUN npm install
+
+#copy the file
+COPY . .
+
+#Expose the port when your app will run on
+EXPOSE 5173
+
+# Set the environment variable for polling 
+ENV CHOKIDAR_USEPOLLING=true
+
+#run the app
+CMD [ "npm","run","dev" ]
