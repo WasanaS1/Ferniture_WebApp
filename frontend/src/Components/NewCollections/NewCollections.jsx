@@ -6,7 +6,7 @@ const NewCollections = () => {
     const [new_collection, setNew_collection] = useState([]);
 
     useEffect(() => {
-        fetch('https://ferniture-backend.onrender.com/newcollection')
+        fetch('https://ferniture-webapp-backend.onrender.com/newcollection')
             .then((response) => response.json())
             .then((data) => {
                 console.log(data); // Log the fetched data to see the structure
