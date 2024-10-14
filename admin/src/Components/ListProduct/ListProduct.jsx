@@ -7,7 +7,7 @@ const ListProduct = () => {
     const [allproduct,setAllProducts] = useState([]);
 
     const fetchInfor = async()=>{
-      await fetch('http://localhost:4000/alllprducts')
+      await fetch('https://ferniture-webapp-backend.onrender.com/alllprducts')
       .then((res)=>res.json())
       .then((data)=>{setAllProducts(data)});
     }
@@ -17,7 +17,7 @@ const ListProduct = () => {
     },[])
 
     const remove_product = async(id)=>{
-      await fetch('http://localhost:4000/removeproduct',{
+      await fetch('https://ferniture-webapp-backend.onrender.com/removeproduct',{
           method:'POST',
           headers:{
               Accept:'application/json',

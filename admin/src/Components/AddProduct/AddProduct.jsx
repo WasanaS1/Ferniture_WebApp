@@ -29,7 +29,7 @@ const AddProduct = () => {
         let formData = new FormData();
         formData.append('product',image);
         //to create image url
-        await fetch('http://localhost:4000/upload',{
+        await fetch('https://ferniture-webapp-backend.onrender.com/upload',{
             method:'POST',
             headers:{
                 Accept:'application/json',
@@ -41,7 +41,7 @@ const AddProduct = () => {
             product.image = responseData.Image_url;
             console.log(product);
             //image upload to database
-            await fetch('http://localhost:4000/addproduct',{
+            await fetch('https://ferniture-webapp-backend.onrender.com/addproduct',{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
