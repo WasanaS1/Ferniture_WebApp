@@ -13,7 +13,8 @@ const { type } = require("os");
 
 app.use(express.json());//data pass as json code
 const allowedOrigins = [
-    'https://ferniture-webapp-frontend.onrender.com'
+    'https://ferniture-webapp-frontend.onrender.com',
+    'https://ferniture-webapp-admin.onrender.com'
 ];
 
 app.use(cors({
