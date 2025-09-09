@@ -16,7 +16,9 @@ const FurnitureContextProvider = (props)=>{
     //for backend
     const [all_product,setAll_Product] = useState([]);
     const [cartItems,setCartItems] = useState(getDefaultCart());
-    const url ='https://ferniture-webapp-backend.onrender.com'
+    const url = process.env.NODE_ENV === 'production' 
+        ? 'https://ferniture-webapp-backend.onrender.com'
+        : 'http://localhost:4000';
 
     useEffect(()=>{
         fetch(`${url}/allproducts`)

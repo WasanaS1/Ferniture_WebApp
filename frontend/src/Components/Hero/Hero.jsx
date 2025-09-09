@@ -3,6 +3,7 @@ import './Hero.css'
 import { FaHandSparkles } from "react-icons/fa";
 import { GiBranchArrow } from "react-icons/gi";
 import hero_image from '../Assests/heroImage.png'
+import { Link } from 'react-router-dom'
 const Hero = () => {
   return (
     <div className='hero'>
@@ -16,10 +17,12 @@ const Hero = () => {
                 <p>Collections</p>
                 <p>for Everyone</p>
             </div>
-            <div className='hero-latest-btn'>
-                <div>Latest Collection</div>
-                <GiBranchArrow />
-            </div>
+            <Link to='/furniture' style={{textDecoration: 'none'}}>
+                <div className='hero-latest-btn'>
+                    <div>Latest Collection</div>
+                    <GiBranchArrow />
+                </div>
+            </Link>
         </div>
         <div className='hero-right'>
             <img src={hero_image} alt="" />

@@ -40,11 +40,17 @@
     height: 70px;
     border-radius: 75px;
     margin-top: 30px;
-    background: #FF4141;
-    color: #e9dbdb;
+    background: #afea4b;
+    color: #000000;
     font-size: 22px;
     font-weight: 500;
     border: 1px solid#000000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.hero-latest-btn:hover{
+    background: #9dd649;
+    transform: scale(1.05);
 }
 .hero-right{
     flex: 1;

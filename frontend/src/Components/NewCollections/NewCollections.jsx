@@ -6,7 +6,11 @@ const NewCollections = () => {
     const [new_collection, setNew_collection] = useState([]);
 
     useEffect(() => {
-        fetch('https://ferniture-webapp-backend.onrender.com/newcollection')
+        const backendUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://ferniture-webapp-backend.onrender.com'
+            : 'http://localhost:4000';
+            
+        fetch(`${backendUrl}/newcollection`)
             .then((response) => response.json())
             .then((data) => {
                 console.log(data); // Log the fetched data to see the structure
@@ -20,8 +24,6 @@ const NewCollections = () => {
     // Frontend
     return (
         <div className='newcollections'>
-            <h1>New Collections</h1>
-            <hr />
             <div className='collections'>
                 {new_collection.map((item, i) => {
                     return (

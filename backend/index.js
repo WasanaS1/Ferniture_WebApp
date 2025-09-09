@@ -12,7 +12,9 @@ app.use(express.json());
 
 const allowedOrigins = [
     'https://ferniture-webapp-frontend.onrender.com',
-    'https://ferniture-webapp-admin.onrender.com'
+    'https://ferniture-webapp-admin.onrender.com',
+    'http://localhost:3000', // Frontend development server
+    'http://localhost:5173'  // Admin development server (Vite)
 ];
 
 app.use(cors({

@@ -1,78 +1,274 @@
-.footer{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
+.footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #ffffff;
+    margin-top: 80px;
 }
-.footer-logo{
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px 40px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.footer-section h3 {
+    color: #afea4b;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Brand Section */
+.footer-brand {
+    padding-right: 20px;
+}
+
+.footer-logo {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
-.footer-logo p{
-    color: #383838;
-    font-size: 46px;
+
+.footer-logo img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.footer-logo h2 {
+    color: #ffffff;
+    font-size: 28px;
     font-weight: 700;
+    margin: 0;
 }
-.footer-links{
+
+.footer-description {
+    color: #bdc3c7;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.footer-social-icons {
     display: flex;
+    gap: 15px;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(175, 234, 75, 0.1);
+    border: 2px solid #afea4b;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.social-link:hover {
+    background: #afea4b;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(175, 234, 75, 0.3);
+}
+
+.footer-icon {
+    font-size: 18px;
+    color: #afea4b;
+    transition: color 0.3s ease;
+}
+
+.social-link:hover .footer-icon {
+    color: #2c3e50;
+}
+
+/* Links Sections */
+.footer-links {
     list-style: none;
-    gap: 50px;
-    color: #252525;
-    font-size: 20px;
+    padding: 0;
+    margin: 0;
 }
-.footer-links li{
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: #bdc3c7;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: #afea4b;
+    transform: translateX(5px);
+}
+
+/* Newsletter Section */
+.footer-newsletter p {
+    color: #bdc3c7;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.newsletter-form input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #34495e;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.newsletter-form input::placeholder {
+    color: #95a5a6;
+}
+
+.newsletter-form input:focus {
+    border-color: #afea4b;
+}
+
+.newsletter-form button {
+    padding: 12px 20px;
+    background: #afea4b;
+    color: #2c3e50;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
 }
-.footer-social-icon{
+
+.newsletter-form button:hover {
+    background: #9dd649;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(175, 234, 75, 0.3);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(175, 234, 75, 0.2);
+}
+
+.footer-bottom-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 25px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-bottom p {
+    color: #bdc3c7;
+    font-size: 14px;
+    margin: 0;
+}
+
+.footer-legal {
     display: flex;
     gap: 20px;
 }
-.footer-icon-container{
-    padding: 10px;
-    padding-bottom: 6px;
-    background:#fbfbfb;
-    border: 1px solid #ebebeb;
+
+.footer-legal a {
+    color: #bdc3c7;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
 }
-.footer-copyright{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 30px;
-    color: #1a1a1a;
-    font-size: 20px;
+
+.footer-legal a:hover {
+    color: #afea4b;
 }
-.footer hr{
-    width: 80%;
-    border: none;
-    border-radius: 10px;
-    height: 3px;
-    background: #c7c7c7c7;
-}
-@media (max-width:800px){
-    .footer {
-        gap: 20px;
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .footer-content {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 30px;
     }
-    .footer-logo{
+    
+    .footer-brand {
+        grid-column: 1 / -1;
+        padding-right: 0;
+        margin-bottom: 20px;
+    }
+    
+    .footer-newsletter {
+        grid-column: 1 / -1;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        padding: 40px 20px 30px;
+    }
+    
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+    
+    .footer-newsletter {
+        grid-column: 1 / -1;
+    }
+    
+    .footer-bottom-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .footer-legal {
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 30px 15px 25px;
+    }
+    
+    .footer-logo h2 {
+        font-size: 24px;
+    }
+    
+    .newsletter-form {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .newsletter-form button {
+        align-self: flex-start;
+    }
+    
+    .footer-legal {
+        flex-direction: column;
         gap: 10px;
-        align-items: end;
-    }
-    .footer-logo img{
-        width: 40px;
-    }
-    .footer-logo p{
-        font-size: 25px;
-    }
-    .footer-links{
-        font-size: 14px;
-        gap: 10px;
-    }
-    .footer-social-icon img{
-        width: 22px;
-    }
-    .footer-copyright{
-        font-size: 13px;
     }
 }

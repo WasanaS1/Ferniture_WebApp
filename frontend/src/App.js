@@ -7,6 +7,7 @@ import FurnitureCategory from './Pages/FurnitureCategory';
 import Product from './Pages/Product';
 import Cart from './Pages/Cart';  
 import LoginSingup from './Pages/LoginSingup';
+import AllProducts from './Pages/AllProducts';
 import Footer from './Components/Footer/Footer';
 import indoor_banner from './Components/Assests/banner_indoor.jpeg'
 import outdoor_banner from './Components/Assests/banner_outdoor.jpeg'
@@ -18,7 +19,8 @@ function App() {
       <BrowserRouter>
         <Navbar/>
         <Routes>
-          <Route path='/' element={<Furniture/>}/>
+          <Route path='/' element={<AllProducts/>}/>
+          <Route path='/furniture' element={<Furniture/>}/>
 
           <Route path='/Indoor' element={<FurnitureCategory banner={indoor_banner} category="Indoor"/>}/>
           <Route path='/Outdoor' element={<FurnitureCategory banner={outdoor_banner} category="Outdoor"/>}/>
