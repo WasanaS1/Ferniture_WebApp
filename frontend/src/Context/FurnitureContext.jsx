@@ -19,7 +19,7 @@ const FurnitureContextProvider = (props)=>{
     const url ='https://ferniture-webapp-backend.onrender.com'
 
     useEffect(()=>{
-        fetch(`${url}/alllprducts`)
+        fetch(`${url}/allproducts`)
         .then((response)=>response.json())
         .then((data)=>setAll_Product(data))
 
