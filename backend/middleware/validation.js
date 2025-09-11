@@ -116,15 +116,10 @@ const productValidation = [
         .isFloat({ min: 0, max: 5 })
         .withMessage('Rating must be between 0 and 5'),
     
-    body('reviewCount')
-        .optional()
-        .isInt({ min: 0 })
-        .withMessage('Review count must be a non-negative integer'),
-    
-    body('sizes')
+    body('specifications')
         .optional()
         .isArray()
-        .withMessage('Sizes must be an array'),
+        .withMessage('Specifications must be an array'),
     
     body('tags')
         .optional()

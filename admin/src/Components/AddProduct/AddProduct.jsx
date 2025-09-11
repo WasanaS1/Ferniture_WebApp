@@ -16,14 +16,13 @@ const AddProduct = ({ onProductAdded }) => {
         old_price:"",
         description:"",
         rating:"0",
-        reviewCount:"0",
-        sizes:[],
+        specifications:[],
         tags:[],
         inStock:true
     })
 
     // State for managing dynamic arrays
-    const [currentSize, setCurrentSize] = useState("");
+    const [currentSpecification, setCurrentSpecification] = useState("");
     const [currentTag, setCurrentTag] = useState("");
 
     const imageHandler = (e)=>{
@@ -38,23 +37,23 @@ const AddProduct = ({ onProductAdded }) => {
         });
     } 
 
-    // Handle adding sizes
-    const addSize = () => {
-        if (currentSize.trim()) {
+    // Handle adding specifications
+    const addSpecification = () => {
+        if (currentSpecification.trim()) {
             setproductDetails({
                 ...productDetails,
-                sizes: [...productDetails.sizes, currentSize.trim()]
+                specifications: [...productDetails.specifications, currentSpecification.trim()]
             });
-            setCurrentSize("");
+            setCurrentSpecification("");
         }
     };
 
-    // Handle removing sizes
-    const removeSize = (index) => {
-        const newSizes = productDetails.sizes.filter((_, i) => i !== index);
+    // Handle removing specifications
+    const removeSpecification = (index) => {
+        const newSpecifications = productDetails.specifications.filter((_, i) => i !== index);
         setproductDetails({
             ...productDetails,
-            sizes: newSizes
+            specifications: newSpecifications
         });
     };
 
@@ -106,7 +105,6 @@ const AddProduct = ({ onProductAdded }) => {
             let product = {
                 ...productDetails,
                 rating: parseFloat(productDetails.rating) || 0,
-                reviewCount: parseInt(productDetails.reviewCount) || 0,
             };
 
             let formData = new FormData();
@@ -153,13 +151,12 @@ const AddProduct = ({ onProductAdded }) => {
                         old_price:"",
                         description:"",
                         rating:"0",
-                        reviewCount:"0",
-                        sizes:[],
+                        specifications:[],
                         tags:[],
                         inStock:true
                     });
                     setimage(false);
-                    setCurrentSize("");
+                    setCurrentSpecification("");
                     setCurrentTag("");
                     
                     // Close modal if callback provided
@@ -274,37 +271,26 @@ const AddProduct = ({ onProductAdded }) => {
                     placeholder='Product rating' 
                 />
             </div>
-            <div className="addproduct-itemfeild">
-                <p>Review Count</p>
-                <input 
-                    value={productDetails.reviewCount} 
-                    onChange={changeHandler} 
-                    type="number" 
-                    min="0"
-                    name='reviewCount' 
-                    placeholder='Number of reviews' 
-                />
-            </div>
         </div>
 
-        {/* Sizes Section */}
+        {/* Specifications Section */}
         <div className="addproduct-itemfeild">
-            <p>Product Sizes</p>
+            <p>Product Specifications</p>
             <div className="size-input-container">
                 <input 
-                    value={currentSize} 
-                    onChange={(e) => setCurrentSize(e.target.value)}
+                    value={currentSpecification} 
+                    onChange={(e) => setCurrentSpecification(e.target.value)}
                     type="text" 
-                    placeholder='Enter size (e.g., "72" L x 36" W x 30" H)' 
-                    onKeyPress={(e) => e.key === 'Enter' && addSize()}
+                    placeholder='Enter specification (e.g., "72&quot; L x 36&quot; W x 30&quot; H", "Oak Wood", "Leather Upholstery")' 
+                    onKeyPress={(e) => e.key === 'Enter' && addSpecification()}
                 />
-                <button type="button" onClick={addSize} className="add-btn">Add Size</button>
+                <button type="button" onClick={addSpecification} className="add-btn">Add Specification</button>
             </div>
             <div className="tags-display">
-                {productDetails.sizes.map((size, index) => (
+                {productDetails.specifications.map((specification, index) => (
                     <span key={index} className="tag-item">
-                        {size}
-                        <button type="button" onClick={() => removeSize(index)} className="remove-tag">×</button>
+                        {specification}
+                        <button type="button" onClick={() => removeSpecification(index)} className="remove-tag">×</button>
                     </span>
                 ))}
             </div>

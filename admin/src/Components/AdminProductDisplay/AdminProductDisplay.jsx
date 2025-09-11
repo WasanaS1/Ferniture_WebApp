@@ -112,7 +112,7 @@ const AdminProductDisplay = ({ product, onRemove, onClose }) => {
                         
                         <div className="admin-productdisplay-right-star">
                             {renderStars(product.rating)}
-                            <p>({product.rating || 0}) • {product.reviewCount || 0} reviews</p>
+                            <p>({product.rating || 0}) • {product.reviews ? product.reviews.length : 0} reviews</p>
                         </div>
                         
                         <div className="admin-productdisplay-right-price">
@@ -124,12 +124,12 @@ const AdminProductDisplay = ({ product, onRemove, onClose }) => {
                             {product.description || 'No description available for this product.'}
                         </div>
                         
-                        {product.sizes && product.sizes.length > 0 && (
+                        {product.specifications && product.specifications.length > 0 && (
                             <div className="admin-productdisplay-right-size">
-                                <h3>Available Sizes</h3>
+                                <h3>Available Specifications</h3>
                                 <div className="admin-productdisplay-right-sizes">
-                                    {product.sizes.map((size, index) => (
-                                        <div key={index} className="size-option">{size}</div>
+                                    {product.specifications.map((specification, index) => (
+                                        <div key={index} className="size-option">{specification}</div>
                                     ))}
                                 </div>
                             </div>

@@ -1,6 +1,42 @@
 .MdOutlineStar{
     color: rgb(255, 180, 4);
 }
+
+.MdOutlineStar.filled {
+    color: rgb(255, 180, 4);
+}
+
+.MdOutlineStar.half-filled {
+    color: rgb(255, 180, 4);
+    position: relative;
+}
+
+.MdOutlineStar.half-filled::after {
+    content: "★";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+    color: rgb(255, 180, 4);
+}
+
+.productdisplay-out-of-stock {
+    color: #ff4141;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 15px 0;
+    padding: 10px 15px;
+    background-color: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+}
+
+.productdisplay-out-of-stock span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 .productdisplay{
     display: flex;
     flex-direction: column;

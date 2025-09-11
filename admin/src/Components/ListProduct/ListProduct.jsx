@@ -126,7 +126,7 @@ const ListProduct = () => {
                         <div className="rating-cell">
                           <span className="stars">{renderStars(product.rating || 0)}</span>
                           <span className="rating-number">({product.rating || 0})</span>
-                          {product.reviewCount > 0 && <span className="review-count">{product.reviewCount} reviews</span>}
+                          {product.reviews && product.reviews.length > 0 && <span className="review-count">{product.reviews.length} reviews</span>}
                         </div>
                         <p className={`stock-status ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
                           {product.inStock ? 'In Stock' : 'Out of Stock'}

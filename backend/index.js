@@ -182,7 +182,6 @@ const Product = mongoose.model("Product", {
     old_price: { type: Number, required: true },
     description: { type: String, default: "" },
     rating: { type: Number, default: 0, min: 0, max: 5 },
-    reviewCount: { type: Number, default: 0 },
     reviews: [{
         id: { type: String, required: true },
         customerName: { type: String, required: true },
@@ -191,7 +190,7 @@ const Product = mongoose.model("Product", {
         date: { type: Date, default: Date.now },
         verified: { type: Boolean, default: false }
     }],
-    sizes: [{ type: String }], // Array of size options
+    specifications: [{ type: String }], // Array of specification options (size variations, materials, etc.)
     tags: [{ type: String }], // Array of tags
     subcategory: { type: String, default: "" },
     inStock: { type: Boolean, default: true },
@@ -217,9 +216,8 @@ app.post('/addproduct', productLimiter, productValidation, checkValidationResult
             old_price: parseFloat(req.body.old_price),
             description: req.body.description || "",
             rating: parseFloat(req.body.rating) || 0,
-            reviewCount: parseInt(req.body.reviewCount) || 0,
             reviews: req.body.reviews || [],
-            sizes: req.body.sizes || [],
+            specifications: req.body.specifications || [],
             tags: req.body.tags || [],
             subcategory: req.body.subcategory || "",
             inStock: req.body.inStock !== undefined ? req.body.inStock : true,
@@ -424,10 +422,9 @@ app.post('/addreview', async (req, res) => {
 
         product.reviews.push(newReview);
         
-        // Recalculate average rating and review count
+        // Recalculate average rating (reviewCount is calculated from reviews array length)
         const totalRating = product.reviews.reduce((sum, review) => sum + review.rating, 0);
         product.rating = totalRating / product.reviews.length;
-        product.reviewCount = product.reviews.length;
 
         await product.save();
 
@@ -436,7 +433,8 @@ app.post('/addreview', async (req, res) => {
             message: "Review added successfully",
             review: newReview,
             newRating: product.rating,
-            newReviewCount: product.reviewCount
+            newReviewCount: product.reviews.length,
+            reviews: product.reviews
         });
     } catch (error) {
         console.error("Error adding review:", error);
@@ -458,7 +456,7 @@ app.get('/reviews/:productId', async (req, res) => {
             success: true, 
             reviews: product.reviews || [],
             rating: product.rating || 0,
-            reviewCount: product.reviewCount || 0
+            reviewCount: product.reviews ? product.reviews.length : 0
         });
     } catch (error) {
         console.error("Error getting reviews:", error);
@@ -490,14 +488,12 @@ app.post('/removereview', async (req, res) => {
 
         product.reviews.splice(reviewIndex, 1);
         
-        // Recalculate average rating and review count
+        // Recalculate average rating (reviewCount is calculated from reviews array length)
         if (product.reviews.length > 0) {
             const totalRating = product.reviews.reduce((sum, review) => sum + review.rating, 0);
             product.rating = totalRating / product.reviews.length;
-            product.reviewCount = product.reviews.length;
         } else {
             product.rating = 0;
-            product.reviewCount = 0;
         }
 
         await product.save();
@@ -506,7 +502,7 @@ app.post('/removereview', async (req, res) => {
             success: true, 
             message: "Review removed successfully",
             newRating: product.rating,
-            newReviewCount: product.reviewCount
+            newReviewCount: product.reviews.length
         });
     } catch (error) {
         console.error("Error removing review:", error);

@@ -101,7 +101,46 @@ const FurnitureContextProvider = (props)=>{
         return totalItem;
     }
 
-    const contextValue = {getTotalCartItems,getTotalCartAmount,all_product,cartItems,addToCart,removeFromCart};
+    // Function to update product data after review changes
+    const updateProductReviews = (productId, newReviews, newRating) => {
+        console.log('updateProductReviews called with:', { productId, newReviews, newRating });
+        setAll_Product(prevProducts => {
+            const updatedProducts = prevProducts.map(product => {
+                // Ensure both are compared as numbers
+                const isMatch = Number(product.id) === Number(productId);
+                console.log('Checking product:', product.id, 'against productId:', productId, 'match:', isMatch);
+                if (isMatch) {
+                    console.log('Updating product with new reviews:', newReviews.length, 'new rating:', newRating);
+                    return { ...product, reviews: newReviews, rating: newRating };
+                }
+                return product;
+            });
+            console.log('Updated products array length:', updatedProducts.length);
+            return updatedProducts;
+        });
+    };
+
+    // Function to refresh all products data
+    const refreshProducts = async () => {
+        try {
+            const response = await fetch(`${url}/allproducts`);
+            const data = await response.json();
+            setAll_Product(data);
+        } catch (error) {
+            console.error('Error refreshing products:', error);
+        }
+    };
+
+    const contextValue = {
+        getTotalCartItems,
+        getTotalCartAmount,
+        all_product,
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateProductReviews,
+        refreshProducts
+    };
 
     return (
        <FurnitureContext.Provider value= {contextValue}>
