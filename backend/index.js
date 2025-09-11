@@ -33,24 +33,41 @@ app.use(sanitizeInput);
 app.use(generalLimiter);
 app.use(express.json({ limit: '10mb' })); // Limit payload size
 
+// Additional CORS middleware for all routes
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, auth-token');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
+
 const allowedOrigins = [
     'https://ferniture-webapp-frontend.onrender.com',
     'https://ferniture-webapp-admin.onrender.com',
     'http://localhost:3000', // Frontend development server
-    'http://localhost:5173'  // Admin development server (Vite)
+    'http://localhost:5173', // Admin development server (Vite)
+    'http://127.0.0.1:3000', // Alternative localhost
+    'http://127.0.0.1:5173'  // Alternative localhost
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or Postman)
+        // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const message = `CORS policy does not allow access from ${origin}`;
-            return callback(new Error(message), false);
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
         }
-        return callback(null, true);
+        console.log(`CORS blocked request from origin: ${origin}`);
+        const message = `CORS policy does not allow access from ${origin}`;
+        return callback(new Error(message), false);
     },
-    methods: 'GET,POST,PUT,DELETE',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'auth-token'],
     credentials: true
 }));
 
@@ -64,6 +81,15 @@ app.get("/", (req, res) => {
     res.send("Express App is Running");
 });
 
+// Test endpoint for CORS
+app.get("/test", (req, res) => {
+    res.json({
+        message: "Backend is working",
+        timestamp: new Date().toISOString(),
+        origin: req.get('origin') || 'no-origin'
+    });
+});
+
 // Image storage configuration
 const storage = multer.diskStorage({
     destination: './upload/images',
@@ -73,18 +99,76 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-app.use('/images', express.static('upload/images')); // Serve images
+
+// Configure static file serving with proper CORS headers
+app.use('/images', (req, res, next) => {
+    // Set CORS headers before serving static files
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    
+    // Handle OPTIONS preflight request
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+}, express.static('upload/images'));
+
+// Alternative image serving route for better CORS handling
+app.get('/api/image/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const imagePath = path.join(__dirname, 'upload', 'images', filename);
+    
+    // Set comprehensive CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Content-Type', 'image/jpeg');
+    
+    // Check if file exists
+    const fs = require('fs');
+    if (fs.existsSync(imagePath)) {
+        res.sendFile(imagePath);
+    } else {
+        res.status(404).json({ error: 'Image not found' });
+    }
+});
 
 // Upload endpoint for images
 app.post("/upload", upload.single('product'), (req, res) => {
-    const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://ferniture-webapp-backend.onrender.com/images/' 
-        : `http://localhost:${port}/images/`;
+    try {
+        console.log('File upload request received');
+        console.log('File info:', req.file);
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: 0,
+                message: "No file uploaded"
+            });
+        }
+        
+        // Use the new API route that has better CORS handling
+        const baseUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://ferniture-webapp-backend.onrender.com/api/image/' 
+            : `http://localhost:${port}/api/image/`;
 
-    res.json({
-        success: 1,
-        Image_url: `${baseUrl}${req.file.filename}`,
-    });
+        const imageUrl = `${baseUrl}${req.file.filename}`;
+        console.log('Generated image URL:', imageUrl);
+
+        res.json({
+            success: 1,
+            Image_url: imageUrl,
+        });
+    } catch (error) {
+        console.error('Error in upload endpoint:', error);
+        res.status(500).json({
+            success: 0,
+            message: "Error uploading file"
+        });
+    }
 });
 
 // Mongoose schema for products
@@ -102,6 +186,8 @@ const Product = mongoose.model("Product", {
 // API to add product
 app.post('/addproduct', productLimiter, productValidation, checkValidationResult, async (req, res) => {
     try {
+        console.log('Add product request received:', req.body);
+        
         const products = await Product.find({});
         let id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
 
@@ -110,15 +196,18 @@ app.post('/addproduct', productLimiter, productValidation, checkValidationResult
             name: req.body.name,
             image: req.body.image,
             category: req.body.category,
-            new_price: req.body.new_price,
-            old_price: req.body.old_price,
+            new_price: parseFloat(req.body.new_price),
+            old_price: parseFloat(req.body.old_price),
         });
 
+        console.log('Product to be saved:', product);
         await product.save();
-        res.json({ success: true, name: req.body.name });
+        console.log('Product saved successfully');
+        
+        res.json({ success: true, name: req.body.name, id: id });
     } catch (error) {
         console.error("Error adding product:", error);
-        res.status(500).json({ success: false, message: "Error adding product" });
+        res.status(500).json({ success: false, message: "Error adding product", error: error.message });
     }
 });
 

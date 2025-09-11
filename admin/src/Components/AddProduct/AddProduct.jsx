@@ -6,6 +6,7 @@ import API_CONFIG from '../../config/api';
 const AddProduct = () => {
 
     const [image,setimage] = useState(false);//for image hadler
+    const [loading, setLoading] = useState(false);
     const [productDetails, setproductDetails] = useState({
         name:"",
         image:"",
@@ -22,36 +23,89 @@ const AddProduct = () => {
     } 
 
     const Add_Product = async ()=>{
-        console.log(productDetails);
-        //connect to back end
-        let responseData;
-        let product = productDetails;
+        try {
+            // Validation before sending
+            if (!productDetails.name.trim()) {
+                alert("Please enter product name");
+                return;
+            }
+            if (!productDetails.new_price || productDetails.new_price <= 0) {
+                alert("Please enter valid new price");
+                return;
+            }
+            if (!productDetails.old_price || productDetails.old_price <= 0) {
+                alert("Please enter valid old price");
+                return;
+            }
+            if (!image) {
+                alert("Please select an image");
+                return;
+            }
 
-        let formData = new FormData();
-        formData.append('product',image);
-        //to create image url
-        await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`,{
-            method:'POST',
-            headers:{
-                Accept:'application/json',
-            },
-            body:formData,
-        }).then((res)=>res.json()).then((data)=>{responseData=data});
+            setLoading(true);
+            console.log(productDetails);
+            
+            //connect to back end
+            let responseData;
+            let product = productDetails;
 
-        if(responseData.success){
-            product.image = responseData.Image_url;
-            console.log(product);
-            //image upload to database
-            await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ADD_PRODUCT}`,{
+            let formData = new FormData();
+            formData.append('product',image);
+            
+            //to create image url
+            const uploadResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`,{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
-                    'Content-Type':'application/json',
                 },
-                body:JSON.stringify(product),
-            }).then((res)=>res.json()).then((data)=>{
-                data.success?alert("Product Added"):alert("Failed")
+                body:formData,
             });
+            
+            responseData = await uploadResponse.json();
+            console.log("Upload response:", responseData);
+
+            if(responseData.success){
+                product.image = responseData.Image_url;
+                console.log("Product to be added:", product);
+                
+                //image upload to database
+                const addResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ADD_PRODUCT}`,{
+                    method:'POST',
+                    headers:{
+                        Accept:'application/json',
+                        'Content-Type':'application/json',
+                    },
+                    body:JSON.stringify(product),
+                });
+                
+                const addResult = await addResponse.json();
+                console.log("Add product response:", addResult);
+                
+                if(addResult.success) {
+                    alert("Product Added Successfully!");
+                    // Reset form
+                    setproductDetails({
+                        name:"",
+                        image:"",
+                        category:"Indoor",
+                        new_price:"",
+                        old_price:""
+                    });
+                    setimage(false);
+                } else {
+                    alert(`Failed to add product: ${addResult.message || 'Unknown error'}`);
+                    if (addResult.errors) {
+                        console.log("Validation errors:", addResult.errors);
+                    }
+                }
+            } else {
+                alert("Failed to upload image");
+            }
+        } catch (error) {
+            console.error("Error adding product:", error);
+            alert("Error adding product. Please try again.");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -59,16 +113,41 @@ const AddProduct = () => {
     <div className='add-product'>
         <div className="addproduct-itemfeild">
             <p>Product title</p>
-            <input value={productDetails.name} onChange={changeHandler} type="text" name='name' placeholder='Type here' />
+            <input 
+                value={productDetails.name} 
+                onChange={changeHandler} 
+                type="text" 
+                name='name' 
+                placeholder='Enter product name (min 3 characters)' 
+                required
+            />
         </div>
         <div className="addproduct-price">
             <div className="addproduct-itemfeild">
                 <p>Price</p>
-                <input value={productDetails.old_price} onChange={changeHandler} type="text" name='old_price' placeholder='Type here' />
+                <input 
+                    value={productDetails.old_price} 
+                    onChange={changeHandler} 
+                    type="number" 
+                    step="0.01"
+                    min="0.01"
+                    name='old_price' 
+                    placeholder='Enter original price' 
+                    required
+                />
             </div>
             <div className="addproduct-itemfeild">
                 <p>Offer Price</p>
-                <input value={productDetails.new_price} onChange={changeHandler} type="text" name='new_price' placeholder='Type here' />
+                <input 
+                    value={productDetails.new_price} 
+                    onChange={changeHandler} 
+                    type="number" 
+                    step="0.01"
+                    min="0.01"
+                    name='new_price' 
+                    placeholder='Enter sale price' 
+                    required
+                />
             </div>
         </div>
         <div className="addproduct-itemfeild">
@@ -83,15 +162,32 @@ const AddProduct = () => {
         <div className="addproduct-itemfeild">
             <label htmlFor="file-input">
                 {   image?(
-                    <img src={URL.createObjectURL(image)} className='addproduct-thumnail-img'/>)
+                    <img src={URL.createObjectURL(image)} className='addproduct-thumnail-img' alt="Product preview"/>)
                     :(
                         <GrCloudUpload className="addproduct-thumnail-img" />
                     )
                 }
             </label>
-            <input onChange={imageHandler} type="file" name='image' id='file-input' hidden />
+            <input 
+                onChange={imageHandler} 
+                type="file" 
+                name='image' 
+                id='file-input' 
+                hidden 
+                accept="image/*"
+                required
+            />
+            <p style={{fontSize: '12px', color: '#666', marginTop: '5px'}}>
+                Click to upload product image (required)
+            </p>
         </div>
-        <button onClick={()=>{Add_Product()}} className='addproduct-btn'>ADD</button>
+        <button 
+            onClick={()=>{Add_Product()}} 
+            className='addproduct-btn'
+            disabled={loading}
+        >
+            {loading ? "Adding Product..." : "ADD PRODUCT"}
+        </button>
     </div>
   )
 }

@@ -81,16 +81,29 @@ const productValidation = [
         .withMessage('Category must be Indoor, Outdoor, or Decorative'),
     
     body('new_price')
-        .isFloat({ min: 0.01 })
-        .withMessage('New price must be a positive number'),
+        .isNumeric()
+        .custom(value => {
+            if (parseFloat(value) <= 0) {
+                throw new Error('New price must be a positive number');
+            }
+            return true;
+        }),
     
     body('old_price')
-        .isFloat({ min: 0.01 })
-        .withMessage('Old price must be a positive number'),
+        .isNumeric()
+        .custom(value => {
+            if (parseFloat(value) <= 0) {
+                throw new Error('Old price must be a positive number');
+            }
+            return true;
+        }),
     
     body('image')
-        .isURL()
-        .withMessage('Image must be a valid URL')
+        .notEmpty()
+        .withMessage('Image URL is required')
+        // Remove strict URL validation temporarily
+        .isLength({ min: 1 })
+        .withMessage('Image URL cannot be empty')
 ];
 
 // Validation result checker
