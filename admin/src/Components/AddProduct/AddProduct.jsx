@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './AddProduct.css'
 import { GrCloudUpload } from "react-icons/gr";
+import API_CONFIG from '../../config/api';
 
 const AddProduct = () => {
 
@@ -29,7 +30,7 @@ const AddProduct = () => {
         let formData = new FormData();
         formData.append('product',image);
         //to create image url
-        await fetch('https://ferniture-webapp-backend.onrender.com/upload',{
+        await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`,{
             method:'POST',
             headers:{
                 Accept:'application/json',
@@ -41,7 +42,7 @@ const AddProduct = () => {
             product.image = responseData.Image_url;
             console.log(product);
             //image upload to database
-            await fetch('https://ferniture-webapp-backend.onrender.com/addproduct',{
+            await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ADD_PRODUCT}`,{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
