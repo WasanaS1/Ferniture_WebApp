@@ -176,9 +176,17 @@ const Product = mongoose.model("Product", {
     id: { type: Number, required: true },
     name: { type: String, required: true },
     image: { type: String, required: true },
+    images: [{ type: String }], // Additional images for gallery
     category: { type: String, required: true },
     new_price: { type: Number, required: true },
     old_price: { type: Number, required: true },
+    description: { type: String, default: "" },
+    rating: { type: Number, default: 0, min: 0, max: 5 },
+    reviewCount: { type: Number, default: 0 },
+    sizes: [{ type: String }], // Array of size options
+    tags: [{ type: String }], // Array of tags
+    subcategory: { type: String, default: "" },
+    inStock: { type: Boolean, default: true },
     date: { type: Date, default: Date.now },
     available: { type: Boolean, default: true },
 });
@@ -195,9 +203,17 @@ app.post('/addproduct', productLimiter, productValidation, checkValidationResult
             id: id,
             name: req.body.name,
             image: req.body.image,
+            images: req.body.images || [],
             category: req.body.category,
             new_price: parseFloat(req.body.new_price),
             old_price: parseFloat(req.body.old_price),
+            description: req.body.description || "",
+            rating: parseFloat(req.body.rating) || 0,
+            reviewCount: parseInt(req.body.reviewCount) || 0,
+            sizes: req.body.sizes || [],
+            tags: req.body.tags || [],
+            subcategory: req.body.subcategory || "",
+            inStock: req.body.inStock !== undefined ? req.body.inStock : true,
         });
 
         console.log('Product to be saved:', product);

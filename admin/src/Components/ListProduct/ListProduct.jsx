@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react'
 import './ListProduct.css'
 import { CiSquareRemove } from "react-icons/ci";
 import API_CONFIG from '../../config/api';
+import AdminProductDisplay from '../AdminProductDisplay/AdminProductDisplay';
 
 const ListProduct = () => {
 
     const [allproduct,setAllProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const fetchInfor = async()=>{
       try {
@@ -52,6 +54,7 @@ const ListProduct = () => {
         const result = await response.json();
         if (result.success) {
           await fetchInfor(); // Refresh the product list
+          setSelectedProduct(null); // Close the modal if open
         } else {
           alert('Failed to remove product');
         }
@@ -61,54 +64,104 @@ const ListProduct = () => {
       }
     }
 
+    const handleRowClick = (product) => {
+      setSelectedProduct(product);
+    }
+
+    const handleCloseModal = () => {
+      setSelectedProduct(null);
+    }
+
+    const renderStars = (rating) => {
+      const stars = [];
+      const fullStars = Math.floor(rating || 0);
+      
+      for (let i = 0; i < fullStars; i++) {
+        stars.push('★');
+      }
+      for (let i = fullStars; i < 5; i++) {
+        stars.push('☆');
+      }
+      return stars.join('') || 'No rating';
+    }
+
   return (
     <div className='list-product'>
         <h1>All Products List</h1>
+        <p className="click-hint">Click on any row to view product details</p>
         
         {loading && <p>Loading products...</p>}
         {error && <p style={{color: 'red'}}>{error}</p>}
         
         {!loading && !error && (
           <>
-            <div className="listproduct-format-main">
+            <div className="listproduct-format-main listproduct-header">
               <p>Image</p>
               <p>Product</p>
+              <p>Category</p>
               <p>Old Price</p>
               <p>New Price</p>
-              <p>Category</p>
+              <p>Rating</p>
+              <p>Stock</p>
               <p>Remove</p>
             </div>
             <div className="listproduct-allproducts">
               <hr />
               {allproduct.length > 0 ? (
                 allproduct.map((product,index)=>{
-                  return <><div key={index} className="listproduct-format-main  listproduct-format">
-                    <img src={product.image} className='listproduct-productitem' alt="" />
-                    <p>{product.name}</p>
-                    <p>${product.old_price}</p>
-                    <p>${product.new_price}</p>
-                    <p>{product.category}</p>
-                    <button 
-                      onClick={()=>{
-                        if(window.confirm('Are you sure you want to remove this product?')) {
-                          remove_product(product.id)
-                        }
-                      }} 
-                      className='listproduct-remove-btn'
-                      title="Remove Product"
-                    >
-                      <CiSquareRemove className='listproduct-removeicon'/>
-                      Remove
-                    </button>
-                  </div>
-                  <hr />
-                  </>
+                  return (
+                    <React.Fragment key={index}>
+                      <div 
+                        className="listproduct-format-main listproduct-format clickable-row"
+                        onClick={() => handleRowClick(product)}
+                      >
+                        <img src={product.image} className='listproduct-productitem' alt="" />
+                        <div className="product-name-cell">
+                          <p className="product-name">{product.name}</p>
+                          {product.subcategory && <p className="product-subcategory">{product.subcategory}</p>}
+                        </div>
+                        <p>{product.category}</p>
+                        <p>${product.old_price}</p>
+                        <p>${product.new_price}</p>
+                        <div className="rating-cell">
+                          <span className="stars">{renderStars(product.rating || 0)}</span>
+                          <span className="rating-number">({product.rating || 0})</span>
+                          {product.reviewCount > 0 && <span className="review-count">{product.reviewCount} reviews</span>}
+                        </div>
+                        <p className={`stock-status ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
+                          {product.inStock ? 'In Stock' : 'Out of Stock'}
+                        </p>
+                        <button 
+                          onClick={(e)=>{
+                            e.stopPropagation(); // Prevent row click when clicking remove button
+                            if(window.confirm('Are you sure you want to remove this product?')) {
+                              remove_product(product.id)
+                            }
+                          }} 
+                          className='listproduct-remove-btn'
+                          title="Remove Product"
+                        >
+                          <CiSquareRemove className='listproduct-removeicon'/>
+                        </button>
+                      </div>
+                      <hr />
+                    </React.Fragment>
+                  )
                 })
               ) : (
                 <p>No products found. Add some products first!</p>
               )}
             </div>
           </>
+        )}
+        
+        {/* Modal for product details */}
+        {selectedProduct && (
+          <AdminProductDisplay 
+            product={selectedProduct}
+            onRemove={remove_product}
+            onClose={handleCloseModal}
+          />
         )}
     </div>
   )

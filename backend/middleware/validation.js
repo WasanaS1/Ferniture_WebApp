@@ -103,7 +103,43 @@ const productValidation = [
         .withMessage('Image URL is required')
         // Remove strict URL validation temporarily
         .isLength({ min: 1 })
-        .withMessage('Image URL cannot be empty')
+        .withMessage('Image URL cannot be empty'),
+    
+    // New optional fields
+    body('description')
+        .optional()
+        .isLength({ max: 1000 })
+        .withMessage('Description cannot exceed 1000 characters'),
+    
+    body('rating')
+        .optional()
+        .isFloat({ min: 0, max: 5 })
+        .withMessage('Rating must be between 0 and 5'),
+    
+    body('reviewCount')
+        .optional()
+        .isInt({ min: 0 })
+        .withMessage('Review count must be a non-negative integer'),
+    
+    body('sizes')
+        .optional()
+        .isArray()
+        .withMessage('Sizes must be an array'),
+    
+    body('tags')
+        .optional()
+        .isArray()
+        .withMessage('Tags must be an array'),
+    
+    body('subcategory')
+        .optional()
+        .isLength({ max: 50 })
+        .withMessage('Subcategory cannot exceed 50 characters'),
+    
+    body('inStock')
+        .optional()
+        .isBoolean()
+        .withMessage('In stock must be true or false')
 ];
 
 // Validation result checker

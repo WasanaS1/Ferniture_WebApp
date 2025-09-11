@@ -11,6 +11,7 @@
     width: 100%;
     color: #7b7b7b;
     font-size: 14px;
+    margin-bottom: 15px;
 }
 .addproduct-itemfeild input {
     box-sizing: border-box;
@@ -24,19 +25,112 @@
     font-family: 'Poppins';
     font-size: 14px;
 }
+
+.addproduct-itemfeild textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100px;
+    border-radius: 4px;
+    padding: 15px;
+    border: 1px solid #c3c3c3;
+    outline: none;
+    color: #7b7b7b;
+    font-family: 'Poppins';
+    font-size: 14px;
+    resize: vertical;
+}
+
 .addproduct-price{
     display: flex;
     gap: 40px;
 }
 .addproduct-selector{
     padding: 10px;
-    width: 100px;
+    width: 100%;
     height: 50px;
     font-size: 14px;
     color: #7b7b7b;
     border: 1px solid #7b7b7b8d;
     border-radius: 4px;
 }
+
+/* Size and Tag input styling */
+.size-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.size-input-container input {
+    flex: 1;
+}
+
+.add-btn {
+    height: 50px;
+    padding: 0 15px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.add-btn:hover {
+    background: #45a049;
+}
+
+.tags-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    background: #e8f4f8;
+    color: #2196F3;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid #2196F3;
+}
+
+.remove-tag {
+    background: none;
+    border: none;
+    color: #2196F3;
+    cursor: pointer;
+    margin-left: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0;
+    line-height: 1;
+}
+
+.remove-tag:hover {
+    color: #f44336;
+}
+
+/* Checkbox styling */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.checkbox-container input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto;
+    height: auto;
+}
+
 .addproduct-thumnail-img{
     height: 120px;
     width: 120px;
@@ -55,11 +149,31 @@
     color: white;
     font-size: 16px;
     font-weight: 500;
-}    
+}
+
+.addproduct-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
 @media(max-width:800px){
     .add-product{
-    width: auto;
-    padding: 30px;
-    margin: 20px;
+        width: auto;
+        padding: 30px;
+        margin: 20px;
+    }
+    
+    .addproduct-price{
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .size-input-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .add-btn {
+        width: 100%;
     }
 }

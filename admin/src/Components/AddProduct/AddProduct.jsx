@@ -11,16 +11,72 @@ const AddProduct = ({ onProductAdded }) => {
         name:"",
         image:"",
         category:"Indoor",
+        subcategory:"",
         new_price:"",
-        old_price:""
+        old_price:"",
+        description:"",
+        rating:"0",
+        reviewCount:"0",
+        sizes:[],
+        tags:[],
+        inStock:true
     })
+
+    // State for managing dynamic arrays
+    const [currentSize, setCurrentSize] = useState("");
+    const [currentTag, setCurrentTag] = useState("");
 
     const imageHandler = (e)=>{
         setimage(e.target.files[0]);
     }
+    
     const changeHandler = (e)=>{
-        setproductDetails({...productDetails,[e.target.name]:e.target.value});
+        const { name, value, type, checked } = e.target;
+        setproductDetails({
+            ...productDetails,
+            [name]: type === 'checkbox' ? checked : value
+        });
     } 
+
+    // Handle adding sizes
+    const addSize = () => {
+        if (currentSize.trim()) {
+            setproductDetails({
+                ...productDetails,
+                sizes: [...productDetails.sizes, currentSize.trim()]
+            });
+            setCurrentSize("");
+        }
+    };
+
+    // Handle removing sizes
+    const removeSize = (index) => {
+        const newSizes = productDetails.sizes.filter((_, i) => i !== index);
+        setproductDetails({
+            ...productDetails,
+            sizes: newSizes
+        });
+    };
+
+    // Handle adding tags
+    const addTag = () => {
+        if (currentTag.trim()) {
+            setproductDetails({
+                ...productDetails,
+                tags: [...productDetails.tags, currentTag.trim()]
+            });
+            setCurrentTag("");
+        }
+    };
+
+    // Handle removing tags
+    const removeTag = (index) => {
+        const newTags = productDetails.tags.filter((_, i) => i !== index);
+        setproductDetails({
+            ...productDetails,
+            tags: newTags
+        });
+    };
 
     const Add_Product = async ()=>{
         try {
@@ -47,7 +103,11 @@ const AddProduct = ({ onProductAdded }) => {
             
             //connect to back end
             let responseData;
-            let product = productDetails;
+            let product = {
+                ...productDetails,
+                rating: parseFloat(productDetails.rating) || 0,
+                reviewCount: parseInt(productDetails.reviewCount) || 0,
+            };
 
             let formData = new FormData();
             formData.append('product',image);
@@ -88,10 +148,19 @@ const AddProduct = ({ onProductAdded }) => {
                         name:"",
                         image:"",
                         category:"Indoor",
+                        subcategory:"",
                         new_price:"",
-                        old_price:""
+                        old_price:"",
+                        description:"",
+                        rating:"0",
+                        reviewCount:"0",
+                        sizes:[],
+                        tags:[],
+                        inStock:true
                     });
                     setimage(false);
+                    setCurrentSize("");
+                    setCurrentTag("");
                     
                     // Close modal if callback provided
                     if (onProductAdded) {
@@ -127,6 +196,20 @@ const AddProduct = ({ onProductAdded }) => {
                 required
             />
         </div>
+
+        <div className="addproduct-itemfeild">
+            <p>Product Description</p>
+            <textarea 
+                value={productDetails.description} 
+                onChange={changeHandler} 
+                name='description' 
+                placeholder='Enter detailed product description (max 1000 characters)' 
+                rows="4"
+                maxLength="1000"
+            />
+            <small>{productDetails.description.length}/1000 characters</small>
+        </div>
+
         <div className="addproduct-price">
             <div className="addproduct-itemfeild">
                 <p>Price</p>
@@ -155,14 +238,115 @@ const AddProduct = ({ onProductAdded }) => {
                 />
             </div>
         </div>
-        <div className="addproduct-itemfeild">
-            <p>Product Category</p>
-            <select value={productDetails.category} onChange={changeHandler} name="category" className='addproduct-selector'>
-                <option value="Indoor">Indoor</option>
-                <option value="Outdoor">Outdoor</option>
-                <option value="Decorative">Decorative</option>
-            </select>
+
+        <div className="addproduct-price">
+            <div className="addproduct-itemfeild">
+                <p>Category</p>
+                <select value={productDetails.category} onChange={changeHandler} name="category" className='addproduct-selector'>
+                    <option value="Indoor">Indoor</option>
+                    <option value="Outdoor">Outdoor</option>
+                    <option value="Decorative">Decorative</option>
+                </select>
+            </div>
+            <div className="addproduct-itemfeild">
+                <p>Subcategory</p>
+                <input 
+                    value={productDetails.subcategory} 
+                    onChange={changeHandler} 
+                    type="text" 
+                    name='subcategory' 
+                    placeholder='Enter subcategory (optional)' 
+                />
+            </div>
         </div>
+
+        <div className="addproduct-price">
+            <div className="addproduct-itemfeild">
+                <p>Rating (0-5)</p>
+                <input 
+                    value={productDetails.rating} 
+                    onChange={changeHandler} 
+                    type="number" 
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    name='rating' 
+                    placeholder='Product rating' 
+                />
+            </div>
+            <div className="addproduct-itemfeild">
+                <p>Review Count</p>
+                <input 
+                    value={productDetails.reviewCount} 
+                    onChange={changeHandler} 
+                    type="number" 
+                    min="0"
+                    name='reviewCount' 
+                    placeholder='Number of reviews' 
+                />
+            </div>
+        </div>
+
+        {/* Sizes Section */}
+        <div className="addproduct-itemfeild">
+            <p>Product Sizes</p>
+            <div className="size-input-container">
+                <input 
+                    value={currentSize} 
+                    onChange={(e) => setCurrentSize(e.target.value)}
+                    type="text" 
+                    placeholder='Enter size (e.g., "72" L x 36" W x 30" H)' 
+                    onKeyPress={(e) => e.key === 'Enter' && addSize()}
+                />
+                <button type="button" onClick={addSize} className="add-btn">Add Size</button>
+            </div>
+            <div className="tags-display">
+                {productDetails.sizes.map((size, index) => (
+                    <span key={index} className="tag-item">
+                        {size}
+                        <button type="button" onClick={() => removeSize(index)} className="remove-tag">×</button>
+                    </span>
+                ))}
+            </div>
+        </div>
+
+        {/* Tags Section */}
+        <div className="addproduct-itemfeild">
+            <p>Product Tags</p>
+            <div className="size-input-container">
+                <input 
+                    value={currentTag} 
+                    onChange={(e) => setCurrentTag(e.target.value)}
+                    type="text" 
+                    placeholder='Enter tag (e.g., "Solid Wood", "Modern Design")' 
+                    onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                />
+                <button type="button" onClick={addTag} className="add-btn">Add Tag</button>
+            </div>
+            <div className="tags-display">
+                {productDetails.tags.map((tag, index) => (
+                    <span key={index} className="tag-item">
+                        {tag}
+                        <button type="button" onClick={() => removeTag(index)} className="remove-tag">×</button>
+                    </span>
+                ))}
+            </div>
+        </div>
+
+        {/* Stock Status */}
+        <div className="addproduct-itemfeild">
+            <label className="checkbox-container">
+                <input 
+                    type="checkbox" 
+                    name="inStock" 
+                    checked={productDetails.inStock}
+                    onChange={changeHandler}
+                />
+                <span className="checkmark"></span>
+                Product is in stock
+            </label>
+        </div>
+
          {/* image input  */}
         <div className="addproduct-itemfeild">
             <label htmlFor="file-input">
@@ -186,6 +370,7 @@ const AddProduct = ({ onProductAdded }) => {
                 Click to upload product image (required)
             </p>
         </div>
+        
         <button 
             onClick={()=>{Add_Product()}} 
             className='addproduct-btn'
