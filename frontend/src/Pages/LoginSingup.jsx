@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import './CSS/Loginsignup.css'
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'
+import { FurnitureContext } from '../Context/FurnitureContext'
 
 
 const LoginSingup = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { refreshCart } = useContext(FurnitureContext);
 
     //mount with back end
     const [state,setState] = useState("Login");
@@ -24,7 +26,10 @@ const LoginSingup = () => {
     })
 
     // Handle redirect after successful login/signup
-    const handleSuccessfulAuth = () => {
+    const handleSuccessfulAuth = async () => {
+        // Refresh cart data after successful authentication
+        await refreshCart();
+        
         // Check if there's a redirect path stored (for add to cart flow)
         const redirectPath = sessionStorage.getItem('redirectAfterLogin');
         if (redirectPath) {
@@ -98,8 +103,8 @@ const LoginSingup = () => {
         if(responsData.success){
           localStorage.setItem('auth-token',responsData.token);
           showMessage('Login successful! Redirecting...', 'success');
-          setTimeout(() => {
-              handleSuccessfulAuth();
+          setTimeout(async () => {
+              await handleSuccessfulAuth();
           }, 1500);
         }
         else{
@@ -135,8 +140,8 @@ const LoginSingup = () => {
         if(responsData.success){
           localStorage.setItem('auth-token',responsData.token);
           showMessage('Account created successfully! Redirecting...', 'success');
-          setTimeout(() => {
-              handleSuccessfulAuth();
+          setTimeout(async () => {
+              await handleSuccessfulAuth();
           }, 1500);
         }
         else{

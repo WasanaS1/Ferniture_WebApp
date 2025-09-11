@@ -8,7 +8,7 @@ import { FurnitureContext } from '../../Context/FurnitureContext';
 import dropdownIcon from '../Assests/dropdown.png'
 const Navbar = () => {
   const [menu,setMenu] = useState("NewArrivals");
-  const {getTotalCartItems} = useContext(FurnitureContext); 
+  const {getTotalCartItems, refreshCart} = useContext(FurnitureContext); 
   const menuRef = useRef();
   const location = useLocation();
   
@@ -27,6 +27,12 @@ const Navbar = () => {
       setMenu("AllProducts");
     }
   }, [location.pathname]);
+  
+  const handleLogout = async () => {
+    localStorage.removeItem('auth-token');
+    await refreshCart(); // Clear cart data
+    window.location.replace('/');
+  };
   
   const dropdown_toggle = (e) => {
     menuRef.current.classList.toggle('nav-menu-visible');
@@ -50,7 +56,7 @@ const Navbar = () => {
       </ul>
       <div className='nav-login-cart'>
         {localStorage.getItem('auth-token')
-          ?<button onClick={()=>{localStorage.removeItem('auth-token');window.location.replace('/')}} >Logout</button>
+          ?<button onClick={handleLogout} >Logout</button>
           :<Link to='/login'><button>Login</button></Link>
         }
         <div className='FaOpencart-icon'>

@@ -120,6 +120,30 @@ const FurnitureContextProvider = (props)=>{
         );
     };
 
+    // Function to refresh cart data
+    const refreshCart = async () => {
+        if(localStorage.getItem('auth-token')){
+            try {
+                const response = await fetch(`${url}/getcart`,{
+                    method:'POST',
+                    headers:{
+                        Accept:'application/form-data',
+                        'auth-token':`${localStorage.getItem('auth-token')}`,
+                        'Content-Type':'application/json',
+                    },
+                    body:"",
+                });
+                const data = await response.json();
+                setCartItems(data);
+            } catch (error) {
+                console.error('Error refreshing cart:', error);
+            }
+        } else {
+            // User logged out, reset cart
+            setCartItems(getDefaultCart());
+        }
+    };
+
     // Function to refresh all products data
     const refreshProducts = async () => {
         try {
@@ -139,7 +163,8 @@ const FurnitureContextProvider = (props)=>{
         addToCart,
         removeFromCart,
         updateProductReviews,
-        refreshProducts
+        refreshProducts,
+        refreshCart
     };
 
     return (
