@@ -9,6 +9,7 @@ import Cart from './Pages/Cart';
 import LoginSingup from './Pages/LoginSingup';
 import AllProducts from './Pages/AllProducts';
 import Footer from './Components/Footer/Footer';
+import ScrollToTop from './Components/ScrollToTop/ScrollToTop';
 import indoor_banner from './Components/Assests/banner_indoor.jpeg'
 import outdoor_banner from './Components/Assests/banner_outdoor.jpeg'
 import deco_banner from './Components/Assests/banner_deco.jpeg'
@@ -17,6 +18,7 @@ function App() {
   return (
     <div>
       <BrowserRouter>
+        <ScrollToTop />
         <Navbar/>
         <Routes>
           <Route path='/' element={<AllProducts/>}/>

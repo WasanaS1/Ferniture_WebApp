@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import {FurnitureContext} from '../Context/FurnitureContext'
 import { useParams } from 'react-router-dom';
 import Breadcrum from '../Components/Breadcrums/Breadcrum';
@@ -9,10 +9,6 @@ const Product = () => {
   const {all_product} = useContext(FurnitureContext);
   const {productId} = useParams();
   const product = all_product.find((e)=>e.id===Number(productId));
-  
-  useEffect(() => {
-    window.scrollTo(0, 0); 
-  }, []);
 
   if (!product) {
     return (

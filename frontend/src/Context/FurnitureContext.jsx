@@ -44,22 +44,27 @@ const FurnitureContextProvider = (props)=>{
     
     
     const addToCart = (itemId) => {
+        // Check if user is authenticated
+        if(!localStorage.getItem('auth-token')){
+            // User is not logged in, return false to indicate failure
+            return false;
+        }
+        
         setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
         //formbackend
-        if(localStorage.getItem('auth-token')){
-            fetch(`${url}/addtocart`,{
-                method:'POST',
-                headers:{
-                    Accept:'application/form-data',
-                    'auth-token':`${localStorage.getItem('auth-token')}`,
-                    'Content-Type':'application/json',
-                },
-                body:JSON.stringify({"itemId":itemId}),
-            })
-            .then((respons)=>respons.json())
-            .then((data)=>console.log(data));
-        }
-        // console.log(cartItems);
+        fetch(`${url}/addtocart`,{
+            method:'POST',
+            headers:{
+                Accept:'application/form-data',
+                'auth-token':`${localStorage.getItem('auth-token')}`,
+                'Content-Type':'application/json',
+            },
+            body:JSON.stringify({"itemId":itemId}),
+        })
+        .then((respons)=>respons.json())
+        .then((data)=>console.log(data));
+        
+        return true; // Successfully added to cart
     }
     const removeFromCart = (itemId) => {
         setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
@@ -103,21 +108,16 @@ const FurnitureContextProvider = (props)=>{
 
     // Function to update product data after review changes
     const updateProductReviews = (productId, newReviews, newRating) => {
-        console.log('updateProductReviews called with:', { productId, newReviews, newRating });
-        setAll_Product(prevProducts => {
-            const updatedProducts = prevProducts.map(product => {
+        setAll_Product(prevProducts => 
+            prevProducts.map(product => {
                 // Ensure both are compared as numbers
                 const isMatch = Number(product.id) === Number(productId);
-                console.log('Checking product:', product.id, 'against productId:', productId, 'match:', isMatch);
                 if (isMatch) {
-                    console.log('Updating product with new reviews:', newReviews.length, 'new rating:', newRating);
                     return { ...product, reviews: newReviews, rating: newRating };
                 }
                 return product;
-            });
-            console.log('Updated products array length:', updatedProducts.length);
-            return updatedProducts;
-        });
+            })
+        );
     };
 
     // Function to refresh all products data
