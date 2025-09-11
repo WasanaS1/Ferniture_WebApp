@@ -3,7 +3,7 @@ import { FurnitureContext } from '../../Context/FurnitureContext';
 import './Checkout.css';
 
 const Checkout = () => {
-    const { getTotalCartAmount, all_product, cartItems, clearCart } = useContext(FurnitureContext);
+    const { getTotalCartAmount, all_product, cartItems, placeOrder } = useContext(FurnitureContext);
     const [customerInfo, setCustomerInfo] = useState({
         firstName: '',
         lastName: '',
@@ -15,6 +15,9 @@ const Checkout = () => {
         zipCode: ''
     });
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [orderDetails, setOrderDetails] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -22,20 +25,39 @@ const Checkout = () => {
             ...prev,
             [name]: value
         }));
+        // Clear error when user starts typing
+        if (error) setError('');
     };
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        // Here you would typically send the order to your backend
-        console.log('Order details:', {
-            customerInfo,
-            items: cartItems,
-            total: getTotalCartAmount()
-        });
-        
-        // Clear the cart after successful order
-        await clearCart();
-        setOrderPlaced(true);
+        setIsLoading(true);
+        setError('');
+
+        try {
+            // Check if cart is empty
+            const cartItemsArray = getCartItemsArray();
+            if (cartItemsArray.length === 0) {
+                setError('Your cart is empty. Please add items before checkout.');
+                setIsLoading(false);
+                return;
+            }
+
+            // Place order using context function
+            const result = await placeOrder(customerInfo, 'cash_on_delivery');
+            
+            if (result.success) {
+                setOrderDetails(result.order);
+                setOrderPlaced(true);
+            } else {
+                setError(result.message || 'Failed to place order. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error placing order:', error);
+            setError('Network error. Please check your connection and try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const getCartItemsArray = () => {
@@ -45,9 +67,21 @@ const Checkout = () => {
     if (orderPlaced) {
         return (
             <div className="checkout-success">
-                <h2>Order Placed Successfully! 🎉</h2>
-                <p>Thank you for your purchase. You will receive an email confirmation shortly.</p>
-                <button onClick={() => window.location.href = '/'}>Continue Shopping</button>
+                <div className="success-container">
+                    <h2>🎉 Order Placed Successfully!</h2>
+                    {orderDetails && (
+                        <div className="order-summary">
+                            <p><strong>Order ID:</strong> {orderDetails.formattedOrderId}</p>
+                            <p><strong>Total Amount:</strong> ${orderDetails.total?.toFixed(2)}</p>
+                            <p><strong>Status:</strong> {orderDetails.status}</p>
+                            {orderDetails.estimatedDelivery && (
+                                <p><strong>Estimated Delivery:</strong> {new Date(orderDetails.estimatedDelivery).toLocaleDateString()}</p>
+                            )}
+                        </div>
+                    )}
+                    <p>Thank you for your purchase! You will receive an email confirmation shortly.</p>
+                    <button onClick={() => window.location.href = '/'}>Continue Shopping</button>
+                </div>
             </div>
         );
     }
@@ -57,6 +91,13 @@ const Checkout = () => {
             <div className="checkout-container">
                 <div className="checkout-form">
                     <h2>Checkout</h2>
+                    {error && (
+                        <div className="error-message">
+                            <p style={{color: 'red', backgroundColor: '#ffebee', padding: '10px', borderRadius: '4px', margin: '10px 0'}}>
+                                {error}
+                            </p>
+                        </div>
+                    )}
                     <form onSubmit={handlePlaceOrder}>
                         <div className="form-section">
                             <h3>Customer Information</h3>
@@ -134,8 +175,12 @@ const Checkout = () => {
                             </div>
                         </div>
                         
-                        <button type="submit" className="place-order-btn">
-                            Place Order - ${getTotalCartAmount().toFixed(2)}
+                        <button 
+                            type="submit" 
+                            className="place-order-btn"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Placing Order...' : `Place Order - $${getTotalCartAmount().toFixed(2)}`}
                         </button>
                     </form>
                 </div>

@@ -56,7 +56,10 @@ const Navbar = () => {
       </ul>
       <div className='nav-login-cart'>
         {localStorage.getItem('auth-token')
-          ?<button onClick={handleLogout} >Logout</button>
+          ?<div className="user-menu">
+            <Link to='/orders'><button className="orders-btn">My Orders</button></Link>
+            <button onClick={handleLogout} >Logout</button>
+           </div>
           :<Link to='/login'><button>Login</button></Link>
         }
         <div className='FaOpencart-icon'>

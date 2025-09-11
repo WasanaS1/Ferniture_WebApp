@@ -51,6 +51,26 @@
 
 .form-section input:focus {
     outline: none;
+    border-color: #ff6347;
+}
+
+.error-message {
+    margin: 15px 0;
+}
+
+.place-order-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.place-order-btn:disabled:hover {
+    background-color: #ccc;
+    transform: none;
+}
+
+.form-section input:focus {
+    outline: none;
     border-color: #FF4141;
 }
 
@@ -153,12 +173,34 @@
 .checkout-success {
     text-align: center;
     padding: 80px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.success-container {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .checkout-success h2 {
     color: #28a745;
     margin-bottom: 20px;
     font-size: 32px;
+}
+
+.order-summary {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.order-summary p {
+    margin: 8px 0;
+    color: #333;
 }
 
 .checkout-success p {

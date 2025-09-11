@@ -259,6 +259,86 @@ const FurnitureContextProvider = (props)=>{
         }
     };
 
+    // Function to place an order
+    const placeOrder = async (customerInfo, paymentMethod = 'cash_on_delivery') => {
+        try {
+            if(!localStorage.getItem('auth-token')){
+                return { success: false, message: "Please login to place an order" };
+            }
+
+            const response = await fetch(`${url}/placeorder`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'auth-token': `${localStorage.getItem('auth-token')}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ customerInfo, paymentMethod }),
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear local cart after successful order
+                setCartItems(getDefaultCart());
+                return { success: true, order: data.order, message: data.message };
+            } else {
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            console.error('Error placing order:', error);
+            return { success: false, message: "Network error. Please try again." };
+        }
+    };
+
+    // Function to get user's orders
+    const getUserOrders = async () => {
+        try {
+            if(!localStorage.getItem('auth-token')){
+                return { success: false, message: "Please login to view orders" };
+            }
+
+            const response = await fetch(`${url}/myorders`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'auth-token': `${localStorage.getItem('auth-token')}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            return { success: false, message: "Network error. Please try again." };
+        }
+    };
+
+    // Function to get specific order details
+    const getOrderDetails = async (orderId) => {
+        try {
+            if(!localStorage.getItem('auth-token')){
+                return { success: false, message: "Please login to view order details" };
+            }
+
+            const response = await fetch(`${url}/order/${orderId}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'auth-token': `${localStorage.getItem('auth-token')}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            return { success: false, message: "Network error. Please try again." };
+        }
+    };
+
     const contextValue = {
         getTotalCartItems,
         getTotalCartAmount,
@@ -268,6 +348,9 @@ const FurnitureContextProvider = (props)=>{
         removeFromCart,
         updateCartQuantity,
         clearCart,
+        placeOrder,
+        getUserOrders,
+        getOrderDetails,
         updateProductReviews,
         refreshProducts,
         refreshCart
