@@ -3,7 +3,7 @@ import './AddProduct.css'
 import { GrCloudUpload } from "react-icons/gr";
 import API_CONFIG from '../../config/api';
 
-const AddProduct = () => {
+const AddProduct = ({ onProductAdded }) => {
 
     const [image,setimage] = useState(false);//for image hadler
     const [loading, setLoading] = useState(false);
@@ -92,6 +92,11 @@ const AddProduct = () => {
                         old_price:""
                     });
                     setimage(false);
+                    
+                    // Close modal if callback provided
+                    if (onProductAdded) {
+                        onProductAdded();
+                    }
                 } else {
                     alert(`Failed to add product: ${addResult.message || 'Unknown error'}`);
                     if (addResult.errors) {

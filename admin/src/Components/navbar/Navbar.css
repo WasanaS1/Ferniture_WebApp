@@ -1,24 +1,153 @@
 .navbar{
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 15px 60px;
-    box-shadow : 0 1px 3px -2px #000;
-    margin-bottom: 1px;
-    background: white;
+    align-items: center;
+    padding: 15px 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    height: 70px;
 }
 
-.nav-profile{
-    width: 75px;
+.nav-logo-section {
+    flex: 1;
 }
-@media(max-width:800px){
-    .navbar{
-    padding: 15px 30px;
-    }
-    .nav-logo{
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.3s ease;
+}
+
+.nav-logo:hover {
+    transform: scale(1.02);
+}
+
+.nav-logo img {
     width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.nav-brand p {
+    color: #000000;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.nav-brand span {
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    display: block;
+    margin-top: -5px;
+}
+
+.nav-center {
+    flex: 2;
+    text-align: center;
+}
+
+.nav-center h2 {
+    color: #2c3e50;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-profile-section {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.admin-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 16px;
+    border-radius: 25px;
+    background: rgba(175, 234, 75, 0.1);
+    border: 1px solid rgba(175, 234, 75, 0.3);
+    transition: all 0.3s ease;
+}
+
+.admin-info:hover {
+    background: rgba(175, 234, 75, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(175, 234, 75, 0.2);
+}
+
+.admin-info span {
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #afea4b;
+    transition: transform 0.3s ease;
+}
+
+.nav-profile:hover {
+    transform: scale(1.1);
+}
+
+@media(max-width: 1024px) {
+    .nav-center h2 {
+        font-size: 16px;
     }
-    .nav-profile{
-        width: 60px;
+}
+
+@media(max-width: 800px) {
+    .navbar {
+        padding: 15px 20px;
+        flex-direction: column;
+        height: auto;
+        gap: 15px;
+    }
+    
+    .nav-logo-section,
+    .nav-center,
+    .nav-profile-section {
+        flex: none;
+    }
+    
+    .nav-center {
+        order: -1;
+    }
+    
+    .nav-center h2 {
+        font-size: 14px;
+    }
+    
+    .nav-logo img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .nav-brand p {
+        font-size: 24px;
+    }
+    
+    .nav-profile {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .admin-info span {
+        font-size: 12px;
     }
 }
