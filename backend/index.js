@@ -7,8 +7,31 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 
+// Import security middleware
+const { hashPassword, comparePassword } = require('./utils/password');
+const { authenticateToken, generateToken } = require('./middleware/auth');
+const { 
+    signupValidation, 
+    loginValidation, 
+    productValidation, 
+    checkValidationResult 
+} = require('./middleware/validation');
+const { 
+    generalLimiter, 
+    authLimiter, 
+    productLimiter, 
+    cartLimiter, 
+    helmetConfig, 
+    sanitizeInput 
+} = require('./middleware/security');
+
 const app = express();
-app.use(express.json());
+
+// Security middleware
+app.use(helmetConfig);
+app.use(sanitizeInput);
+app.use(generalLimiter);
+app.use(express.json({ limit: '10mb' })); // Limit payload size
 
 const allowedOrigins = [
     'https://ferniture-webapp-frontend.onrender.com',
@@ -77,7 +100,7 @@ const Product = mongoose.model("Product", {
 });
 
 // API to add product
-app.post('/addproduct', async (req, res) => {
+app.post('/addproduct', productLimiter, productValidation, checkValidationResult, async (req, res) => {
     try {
         const products = await Product.find({});
         let id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
@@ -121,22 +144,19 @@ app.get('/allproducts', async (req, res) => {
     }
 });
 
-// User schema
-const Users = mongoose.model('Users', {
-    name: { type: String },
-    email: { type: String, unique: true },
-    password: { type: String },
-    cartData: { type: Object },
-    date: { type: Date, default: Date.now },
-});
+// Import User model
+const Users = require('./models/User');
 
 // User signup endpoint
-app.post('/signup', async (req, res) => {
+app.post('/signup', authLimiter, signupValidation, checkValidationResult, async (req, res) => {
     try {
         let check = await Users.findOne({ email: req.body.email });
         if (check) {
             return res.status(400).json({ success: false, errors: "Existing user found with the same email address" });
         }
+
+        // Hash the password
+        const hashedPassword = await hashPassword(req.body.password);
 
         const cart = {};
         for (let i = 0; i < 300; i++) {
@@ -146,13 +166,12 @@ app.post('/signup', async (req, res) => {
         const user = new Users({
             name: req.body.username,
             email: req.body.email,
-            password: req.body.password,
+            password: hashedPassword, // Store hashed password
             cartData: cart,
         });
         await user.save();
 
-        const data = { user: { id: user.id } };
-        const token = jwt.sign(data, 'secret_ecom');
+        const token = generateToken(user.id);
         res.json({ success: true, token });
     } catch (error) {
         console.error("Error during signup:", error);
@@ -161,20 +180,19 @@ app.post('/signup', async (req, res) => {
 });
 
 // User login endpoint
-app.post('/login', async (req, res) => {
+app.post('/login', authLimiter, loginValidation, checkValidationResult, async (req, res) => {
     try {
         let user = await Users.findOne({ email: req.body.email });
         if (user) {
-            const passCompare = req.body.password === user.password;
+            const passCompare = await comparePassword(req.body.password, user.password);
             if (passCompare) {
-                const data = { user: { id: user.id } };
-                const token = jwt.sign(data, 'secret_ecom');
+                const token = generateToken(user.id);
                 res.json({ success: true, token });
             } else {
-                res.json({ success: false, errors: "Wrong Password" });
+                res.status(400).json({ success: false, errors: "Wrong Password" });
             }
         } else {
-            res.json({ success: false, errors: "Wrong Email" });
+            res.status(400).json({ success: false, errors: "Wrong Email" });
         }
     } catch (error) {
         console.error("Error during login:", error);
@@ -195,47 +213,49 @@ app.get('/newcollection', async (req, res) => {
 });
 
 // Middleware to fetch user for cart item
-const fetchuser = async (req, res, next) => {
-    const token = req.header('auth-token');
-    if (!token) {
-        return res.status(401).send({ errors: "Please authenticate using a valid token" });
-    }
-
-    try {
-        const data = jwt.verify(token, 'secret_ecom');
-        req.user = data.user;
-        next();
-    } catch (error) {
-        console.error("Error verifying token:", error);
-        res.status(401).send({ errors: "Please authenticate using a valid token" });
-    }
-};
+const fetchuser = authenticateToken; // Use the new secure middleware
 
 // Endpoint for adding to cart
-app.post('/addtocart', fetchuser, async (req, res) => {
+app.post('/addtocart', cartLimiter, fetchuser, async (req, res) => {
     try {
+        if (!req.body.itemId) {
+            return res.status(400).json({ success: false, message: "Item ID is required" });
+        }
+
         let userData = await Users.findOne({ _id: req.user.id });
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
         userData.cartData[req.body.itemId] += 1;
         await Users.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-        res.send("Added");
+        res.json({ success: true, message: "Added to cart" });
     } catch (error) {
         console.error("Error adding to cart:", error);
-        res.status(500).send("Error adding to cart");
+        res.status(500).json({ success: false, message: "Error adding to cart" });
     }
 });
 
 // Remove from cart
-app.post('/removefromcart', fetchuser, async (req, res) => {
+app.post('/removefromcart', cartLimiter, fetchuser, async (req, res) => {
     try {
+        if (!req.body.itemId) {
+            return res.status(400).json({ success: false, message: "Item ID is required" });
+        }
+
         let userData = await Users.findOne({ _id: req.user.id });
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
         if (userData.cartData[req.body.itemId] > 0) {
             userData.cartData[req.body.itemId] -= 1;
             await Users.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
         }
-        res.send("Removed");
+        res.json({ success: true, message: "Removed from cart" });
     } catch (error) {
         console.error("Error removing from cart:", error);
-        res.status(500).send("Error removing from cart");
+        res.status(500).json({ success: false, message: "Error removing from cart" });
     }
 });
 
@@ -243,10 +263,13 @@ app.post('/removefromcart', fetchuser, async (req, res) => {
 app.post('/getcart', fetchuser, async (req, res) => {
     try {
         let userData = await Users.findOne({ _id: req.user.id });
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
         res.json(userData.cartData);
     } catch (error) {
         console.error("Error getting cart data:", error);
-        res.status(500).send("Error getting cart data");
+        res.status(500).json({ success: false, message: "Error getting cart data" });
     }
 });
 
