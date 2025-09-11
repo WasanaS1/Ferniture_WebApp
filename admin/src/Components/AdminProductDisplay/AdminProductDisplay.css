@@ -301,6 +301,121 @@
     font-weight: 600;
 }
 
+/* Reviews Management Section */
+.admin-reviews-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e1e8ed;
+}
+
+.admin-reviews-section h3 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.admin-reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.admin-review-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: box-shadow 0.3s ease;
+}
+
+.admin-review-item:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.verified-badge {
+    background: #27ae60;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.review-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-rating .star {
+    font-size: 14px;
+}
+
+.remove-review-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.remove-review-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.review-date {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.review-comment {
+    color: #444;
+    font-size: 13px;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.no-reviews {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .admin-productdisplay {

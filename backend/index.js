@@ -183,6 +183,14 @@ const Product = mongoose.model("Product", {
     description: { type: String, default: "" },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
+    reviews: [{
+        id: { type: String, required: true },
+        customerName: { type: String, required: true },
+        rating: { type: Number, required: true, min: 1, max: 5 },
+        comment: { type: String, required: true },
+        date: { type: Date, default: Date.now },
+        verified: { type: Boolean, default: false }
+    }],
     sizes: [{ type: String }], // Array of size options
     tags: [{ type: String }], // Array of tags
     subcategory: { type: String, default: "" },
@@ -210,6 +218,7 @@ app.post('/addproduct', productLimiter, productValidation, checkValidationResult
             description: req.body.description || "",
             rating: parseFloat(req.body.rating) || 0,
             reviewCount: parseInt(req.body.reviewCount) || 0,
+            reviews: req.body.reviews || [],
             sizes: req.body.sizes || [],
             tags: req.body.tags || [],
             subcategory: req.body.subcategory || "",
@@ -375,6 +384,133 @@ app.post('/getcart', fetchuser, async (req, res) => {
     } catch (error) {
         console.error("Error getting cart data:", error);
         res.status(500).json({ success: false, message: "Error getting cart data" });
+    }
+});
+
+// Review Management APIs
+
+// Add review to product
+app.post('/addreview', async (req, res) => {
+    try {
+        const { productId, customerName, rating, comment } = req.body;
+        
+        if (!productId || !customerName || !rating || !comment) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Product ID, customer name, rating, and comment are required" 
+            });
+        }
+
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Rating must be between 1 and 5" 
+            });
+        }
+
+        const product = await Product.findOne({ id: productId });
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        const newReview = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            customerName: customerName.trim(),
+            rating: parseInt(rating),
+            comment: comment.trim(),
+            date: new Date(),
+            verified: false
+        };
+
+        product.reviews.push(newReview);
+        
+        // Recalculate average rating and review count
+        const totalRating = product.reviews.reduce((sum, review) => sum + review.rating, 0);
+        product.rating = totalRating / product.reviews.length;
+        product.reviewCount = product.reviews.length;
+
+        await product.save();
+
+        res.json({ 
+            success: true, 
+            message: "Review added successfully",
+            review: newReview,
+            newRating: product.rating,
+            newReviewCount: product.reviewCount
+        });
+    } catch (error) {
+        console.error("Error adding review:", error);
+        res.status(500).json({ success: false, message: "Error adding review" });
+    }
+});
+
+// Get reviews for a product
+app.get('/reviews/:productId', async (req, res) => {
+    try {
+        const productId = parseInt(req.params.productId);
+        const product = await Product.findOne({ id: productId });
+        
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        res.json({ 
+            success: true, 
+            reviews: product.reviews || [],
+            rating: product.rating || 0,
+            reviewCount: product.reviewCount || 0
+        });
+    } catch (error) {
+        console.error("Error getting reviews:", error);
+        res.status(500).json({ success: false, message: "Error getting reviews" });
+    }
+});
+
+// Delete review (admin only)
+app.post('/removereview', async (req, res) => {
+    try {
+        const { productId, reviewId } = req.body;
+        
+        if (!productId || !reviewId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Product ID and Review ID are required" 
+            });
+        }
+
+        const product = await Product.findOne({ id: productId });
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        const reviewIndex = product.reviews.findIndex(review => review.id === reviewId);
+        if (reviewIndex === -1) {
+            return res.status(404).json({ success: false, message: "Review not found" });
+        }
+
+        product.reviews.splice(reviewIndex, 1);
+        
+        // Recalculate average rating and review count
+        if (product.reviews.length > 0) {
+            const totalRating = product.reviews.reduce((sum, review) => sum + review.rating, 0);
+            product.rating = totalRating / product.reviews.length;
+            product.reviewCount = product.reviews.length;
+        } else {
+            product.rating = 0;
+            product.reviewCount = 0;
+        }
+
+        await product.save();
+
+        res.json({ 
+            success: true, 
+            message: "Review removed successfully",
+            newRating: product.rating,
+            newReviewCount: product.reviewCount
+        });
+    } catch (error) {
+        console.error("Error removing review:", error);
+        res.status(500).json({ success: false, message: "Error removing review" });
     }
 });
 
