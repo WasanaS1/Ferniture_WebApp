@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import './CSS/Loginsignup.css'
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'
 
 
 const LoginSingup = () => {
 
   //mount with back end
     const [state,setState] = useState("Login");
+    const [showPassword, setShowPassword] = useState(false);
+    const [agreeTerms, setAgreeTerms] = useState(false);
   //api
     const [formData,setFormData] = useState({
       username:"",
@@ -70,31 +73,59 @@ const LoginSingup = () => {
 
   return (
     <div className='loginsignup'>
-      <div className="loginsignup-container">
-        {/* <h1>Sign up</h1> backend mount*/}
-        <h1>{state}</h1>
+      <div className={`loginsignup-container ${state === 'Login' ? 'login-mode' : ''}`}>
+        <div className="login-header">
+          <h1>{state}</h1>
+          <p className="welcome-text">Welcome! Please enter your details</p>
+        </div>
+        
         <div className="loginsignup-fields">
           {state==="Sign up"?<input name='username' value={formData.username} onChange={changeHandler} type="text" placeholder='Your Name' />:<></>}
           <input name='email' value={formData.email} onChange={changeHandler} type="email" placeholder='Email Address' />
-          <input name='password' value={formData.password} onChange={changeHandler} type="password" placeholder='Password' />
+          <div className="password-field">
+            <input 
+              name='password' 
+              value={formData.password} 
+              onChange={changeHandler} 
+              type={showPassword ? "text" : "password"} 
+              placeholder='Password' 
+            />
+            <span 
+              className="password-toggle" 
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+            </span>
+          </div>
         </div>
-        {/* backent apit */}
-        <button onClick={()=>{state==='Login'?login():signup()}}>Continue</button>
-        {state==="Sign up"?
-          <p className='loginsignup-login'>Already have an account?
-            <span onClick={()=>{setState("Login")}}> Login here</span>
-          </p>
-        :
-          <p className='loginsignup-login'>Create an account
-            <span onClick={()=>{setState("Sign up")}}> Click here</span>
-          </p>
-        }
-        <div className="loginsignup-agree">
-          <input type="checkbox" name='' id='' />
-          <p>By continuing,I agree to the terms of us & peivacy policy.</p>
+
+        <div className="login-actions">
+          {state==="Sign up" && (
+            <div className="loginsignup-agree">
+              <input 
+                type="checkbox" 
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                id='agree-terms' 
+              />
+              <label htmlFor='agree-terms'>I agree to the terms of use & privacy policy.</label>
+            </div>
+          )}
+          <button onClick={()=>{state==='Login'?login():signup()}}>Continue</button>
+          
+          {state==="Sign up"?
+            <p className='loginsignup-login'>Already have an account?
+              <span onClick={()=>{setState("Login")}}> Login here</span>
+            </p>
+          :
+            <p className='loginsignup-login'>Create an account?
+              <span onClick={()=>{setState("Sign up")}}> Click here</span>
+            </p>
+          }
         </div>
-      </div>
+
         
+      </div>
     </div>
   )
 }
