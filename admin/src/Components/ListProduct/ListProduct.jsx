@@ -71,6 +71,7 @@ const ListProduct = () => {
         {!loading && !error && (
           <>
             <div className="listproduct-format-main">
+              <p>Image</p>
               <p>Product</p>
               <p>Old Price</p>
               <p>New Price</p>
@@ -87,7 +88,18 @@ const ListProduct = () => {
                     <p>${product.old_price}</p>
                     <p>${product.new_price}</p>
                     <p>{product.category}</p>
-                    <CiSquareRemove onClick={()=>{remove_product(product.id)}} className='listproduct-removeicon'/>
+                    <button 
+                      onClick={()=>{
+                        if(window.confirm('Are you sure you want to remove this product?')) {
+                          remove_product(product.id)
+                        }
+                      }} 
+                      className='listproduct-remove-btn'
+                      title="Remove Product"
+                    >
+                      <CiSquareRemove className='listproduct-removeicon'/>
+                      Remove
+                    </button>
                   </div>
                   <hr />
                   </>
