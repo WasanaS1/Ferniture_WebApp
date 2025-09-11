@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import './ProductDisplay.css'
 import { MdOutlineStar } from "react-icons/md";
 import { MdOutlineStarOutline } from "react-icons/md";
@@ -7,6 +8,25 @@ import { FurnitureContext } from '../../Context/FurnitureContext';
 const ProductDisplay = (props) => {
     const {product} = props;
     const {addToCart} = useContext(FurnitureContext);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleAddToCart = () => {
+        // Check if user is authenticated
+        if(!localStorage.getItem('auth-token')){
+            // Store current location in sessionStorage for redirect after login
+            sessionStorage.setItem('redirectAfterLogin', location.pathname);
+            // Navigate to login page
+            navigate('/login');
+            return;
+        }
+        
+        // User is authenticated, add to cart
+        const success = addToCart(product.id);
+        if (success) {
+            alert('Product added to cart successfully!');
+        }
+    }
 
     if (!product || !product.image || !product.name) {
         return <div>Loading...</div>; 
@@ -83,7 +103,7 @@ const ProductDisplay = (props) => {
                         </div>
                     </div>
                 )}
-                <button onClick={()=>{addToCart(product.id)}}>Add To Cart</button>
+                <button onClick={handleAddToCart}>Add To Cart</button>
                 <p className='productdisplay-right-category'>
                     <span>Category :</span> {product.category}
                     {product.subcategory && `, ${product.subcategory}`}
