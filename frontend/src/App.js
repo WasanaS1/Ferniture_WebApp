@@ -8,6 +8,7 @@ import Product from './Pages/Product';
 import Cart from './Pages/Cart';  
 import LoginSingup from './Pages/LoginSingup';
 import AllProducts from './Pages/AllProducts';
+import Checkout from './Components/Checkout/Checkout';
 import Footer from './Components/Footer/Footer';
 import ScrollToTop from './Components/ScrollToTop/ScrollToTop';
 import indoor_banner from './Components/Assests/banner_indoor.jpeg'
@@ -31,6 +32,7 @@ function App() {
           <Route path='/product/:productId' element={<Product/>}/>
         
           <Route path='/cart' element={<Cart/>}/>
+          <Route path='/checkout' element={<Checkout/>}/>
           <Route path='/login' element={<LoginSingup/>}/>
         </Routes>
         <Footer/>

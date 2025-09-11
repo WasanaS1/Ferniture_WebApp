@@ -43,33 +43,17 @@ const FurnitureContextProvider = (props)=>{
     //forntend
     
     
-    const addToCart = (itemId) => {
+    const addToCart = async (itemId) => {
         // Check if user is authenticated
         if(!localStorage.getItem('auth-token')){
             // User is not logged in, return false to indicate failure
             return false;
         }
         
-        setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
-        //formbackend
-        fetch(`${url}/addtocart`,{
-            method:'POST',
-            headers:{
-                Accept:'application/form-data',
-                'auth-token':`${localStorage.getItem('auth-token')}`,
-                'Content-Type':'application/json',
-            },
-            body:JSON.stringify({"itemId":itemId}),
-        })
-        .then((respons)=>respons.json())
-        .then((data)=>console.log(data));
-        
-        return true; // Successfully added to cart
-    }
-    const removeFromCart = (itemId) => {
-        setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
-        if(localStorage.getItem('auth-token')){
-            fetch(`${url}/removefromcart`,{
+        try {
+            setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
+            //formbackend
+            const response = await fetch(`${url}/addtocart`,{
                 method:'POST',
                 headers:{
                     Accept:'application/form-data',
@@ -77,9 +61,96 @@ const FurnitureContextProvider = (props)=>{
                     'Content-Type':'application/json',
                 },
                 body:JSON.stringify({"itemId":itemId}),
-            })
-            .then((respons)=>respons.json())
-            .then((data)=>console.log(data));
+            });
+            
+            const data = await response.json();
+            if (!data.success) {
+                console.error('Failed to add to cart:', data.message);
+                // Revert optimistic update
+                setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
+                return false;
+            }
+            
+            return true; // Successfully added to cart
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            // Revert optimistic update
+            setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
+            return false;
+        }
+    }
+    
+    const removeFromCart = async (itemId) => {
+        try {
+            setCartItems((prev)=>({...prev,[itemId]:Math.max(0, prev[itemId]-1)}));
+            
+            if(localStorage.getItem('auth-token')){
+                const response = await fetch(`${url}/removefromcart`,{
+                    method:'POST',
+                    headers:{
+                        Accept:'application/form-data',
+                        'auth-token':`${localStorage.getItem('auth-token')}`,
+                        'Content-Type':'application/json',
+                    },
+                    body:JSON.stringify({"itemId":itemId}),
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Failed to remove from cart:', data.message);
+                    // Revert optimistic update
+                    setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
+                    return false;
+                }
+            }
+            return true;
+        } catch (error) {
+            console.error('Error removing from cart:', error);
+            // Revert optimistic update
+            setCartItems((prev)=>({...prev,[itemId]:prev[itemId]+1}));
+            return false;
+        }
+    }
+
+    // New function to update cart quantity directly
+    const updateCartQuantity = async (itemId, newQuantity) => {
+        if (newQuantity < 0) return false;
+        
+        const currentQuantity = cartItems[itemId] || 0;
+        const difference = newQuantity - currentQuantity;
+        
+        try {
+            setCartItems((prev)=>({...prev,[itemId]:newQuantity}));
+            
+            if(localStorage.getItem('auth-token')){
+                // Make multiple API calls based on the difference
+                for (let i = 0; i < Math.abs(difference); i++) {
+                    const endpoint = difference > 0 ? '/addtocart' : '/removefromcart';
+                    const response = await fetch(`${url}${endpoint}`,{
+                        method:'POST',
+                        headers:{
+                            Accept:'application/form-data',
+                            'auth-token':`${localStorage.getItem('auth-token')}`,
+                            'Content-Type':'application/json',
+                        },
+                        body:JSON.stringify({"itemId":itemId}),
+                    });
+                    
+                    const data = await response.json();
+                    if (!data.success) {
+                        console.error('Failed to update cart quantity:', data.message);
+                        // Revert optimistic update
+                        setCartItems((prev)=>({...prev,[itemId]:currentQuantity}));
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (error) {
+            console.error('Error updating cart quantity:', error);
+            // Revert optimistic update
+            setCartItems((prev)=>({...prev,[itemId]:currentQuantity}));
+            return false;
         }
     }
 
@@ -89,10 +160,12 @@ const FurnitureContextProvider = (props)=>{
             if(cartItems[item]>0)
             {
                 let itemInfo = all_product.find((product)=>product.id===Number(item))
-                totalAmount += itemInfo.new_price * cartItems[item];
+                if (itemInfo) {
+                    totalAmount += itemInfo.new_price * cartItems[item];
+                }
             }
-            
-        }return totalAmount;
+        }
+        return totalAmount;
     }
 
     const getTotalCartItems = () => {
@@ -155,6 +228,37 @@ const FurnitureContextProvider = (props)=>{
         }
     };
 
+    // Function to clear the entire cart
+    const clearCart = async () => {
+        try {
+            setCartItems(getDefaultCart());
+            
+            if(localStorage.getItem('auth-token')){
+                // Clear cart on backend by removing all items
+                const itemIds = Object.keys(cartItems).filter(id => cartItems[id] > 0);
+                
+                for (const itemId of itemIds) {
+                    const quantity = cartItems[itemId];
+                    for (let i = 0; i < quantity; i++) {
+                        await fetch(`${url}/removefromcart`,{
+                            method:'POST',
+                            headers:{
+                                Accept:'application/form-data',
+                                'auth-token':`${localStorage.getItem('auth-token')}`,
+                                'Content-Type':'application/json',
+                            },
+                            body:JSON.stringify({"itemId":parseInt(itemId)}),
+                        });
+                    }
+                }
+            }
+            return true;
+        } catch (error) {
+            console.error('Error clearing cart:', error);
+            return false;
+        }
+    };
+
     const contextValue = {
         getTotalCartItems,
         getTotalCartAmount,
@@ -162,6 +266,8 @@ const FurnitureContextProvider = (props)=>{
         cartItems,
         addToCart,
         removeFromCart,
+        updateCartQuantity,
+        clearCart,
         updateProductReviews,
         refreshProducts,
         refreshCart

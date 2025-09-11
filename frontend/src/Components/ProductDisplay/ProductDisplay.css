@@ -199,6 +199,25 @@
     box-shadow: 0 8px 25px rgba(255, 65, 65, 0.4);
     color: #ffffff;
 }
+
+/* Enhanced button states */
+.productdisplay-right button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.productdisplay-right button.out-of-stock {
+    background: #999;
+    color: white;
+}
+
+.productdisplay-right button.out-of-stock:hover {
+    background: #999;
+    transform: none;
+    box-shadow: 0 4px 15px rgba(153, 153, 153, 0.3);
+}
 .productdisplay-right button:active{
     transform: translateY(0px);
     box-shadow: 0 4px 15px rgba(255, 65, 65, 0.3);

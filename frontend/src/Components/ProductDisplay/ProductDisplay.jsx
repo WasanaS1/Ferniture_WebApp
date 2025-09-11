@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import './ProductDisplay.css'
 import { MdOutlineStar } from "react-icons/md";
@@ -10,8 +10,9 @@ const ProductDisplay = (props) => {
     const {addToCart} = useContext(FurnitureContext);
     const navigate = useNavigate();
     const location = useLocation();
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         // Check if user is authenticated
         if(!localStorage.getItem('auth-token')){
             // Store current location in sessionStorage for redirect after login
@@ -21,10 +22,26 @@ const ProductDisplay = (props) => {
             return;
         }
         
-        // User is authenticated, add to cart
-        const success = addToCart(product.id);
-        if (success) {
-            alert('Product added to cart successfully!');
+        // Check if product is in stock
+        if (!product.inStock) {
+            alert('Sorry, this product is currently out of stock.');
+            return;
+        }
+        
+        setIsAddingToCart(true);
+        try {
+            // User is authenticated, add to cart
+            const success = await addToCart(product.id);
+            if (success) {
+                alert('Product added to cart successfully!');
+            } else {
+                alert('Failed to add product to cart. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            setIsAddingToCart(false);
         }
     }
 
@@ -103,7 +120,13 @@ const ProductDisplay = (props) => {
                         </div>
                     </div>
                 )}
-                <button onClick={handleAddToCart}>Add To Cart</button>
+                <button 
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart || !product.inStock}
+                    className={`add-to-cart-btn ${!product.inStock ? 'out-of-stock' : ''}`}
+                >
+                    {isAddingToCart ? 'Adding...' : !product.inStock ? 'Out of Stock' : 'Add To Cart'}
+                </button>
                 <p className='productdisplay-right-category'>
                     <span>Category :</span> {product.category}
                     {product.subcategory && `, ${product.subcategory}`}
