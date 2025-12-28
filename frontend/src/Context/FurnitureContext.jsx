@@ -22,8 +22,30 @@ const FurnitureContextProvider = (props)=>{
 
     useEffect(()=>{
         fetch(`${url}/allproducts`)
-        .then((response)=>response.json())
-        .then((data)=>setAll_Product(data))
+        .then(async (response)=>{
+            if (!response.ok) {
+                // log raw body for debugging when server returns 500 or other errors
+                const text = await response.text().catch(()=>"<unreadable body>");
+                console.error('Error fetching /allproducts:', response.status, text);
+                setAll_Product([]);
+                return null;
+            }
+            return response.json();
+        })
+        .then((data)=>{
+            if (Array.isArray(data)) {
+                setAll_Product(data);
+            } else if (data === null) {
+                // already handled above
+            } else {
+                console.error('Unexpected /allproducts response shape:', data);
+                setAll_Product([]);
+            }
+        })
+        .catch((err)=>{
+            console.error('Network/error fetching /allproducts:', err);
+            setAll_Product([]);
+        });
 
         if(localStorage.getItem('auth-token')){
             fetch(`${url}/getcart`,{
@@ -221,8 +243,18 @@ const FurnitureContextProvider = (props)=>{
     const refreshProducts = async () => {
         try {
             const response = await fetch(`${url}/allproducts`);
+            if (!response.ok) {
+                const text = await response.text().catch(()=>"<unreadable body>");
+                console.error('Error refreshing products:', response.status, text);
+                setAll_Product([]);
+                return;
+            }
             const data = await response.json();
-            setAll_Product(data);
+            if (Array.isArray(data)) setAll_Product(data);
+            else {
+                console.error('Unexpected refreshProducts response:', data);
+                setAll_Product([]);
+            }
         } catch (error) {
             console.error('Error refreshing products:', error);
         }

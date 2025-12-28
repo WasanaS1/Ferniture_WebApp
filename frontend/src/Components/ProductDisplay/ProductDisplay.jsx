@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import './ProductDisplay.css'
 import { MdOutlineStar } from "react-icons/md";
@@ -11,6 +11,14 @@ const ProductDisplay = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+    // selected thumbnail index for main image
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    // Reset selected index when product or images change (use optional chaining to avoid errors when product is undefined)
+    useEffect(() => {
+        setSelectedIndex(0);
+    }, [product?.image, product?.images]);
 
     const handleAddToCart = async () => {
         // Check if user is authenticated
@@ -45,8 +53,8 @@ const ProductDisplay = (props) => {
         }
     }
 
-    if (!product || !product.image || !product.name) {
-        return <div>Loading...</div>; 
+    if (!product || !product.name) {
+        return <div>Loading...</div>;
     }
 
     // Helper function to render stars based on rating
@@ -71,37 +79,44 @@ const ProductDisplay = (props) => {
         return stars;
     };
 
-    // Get product images - use images array if available, otherwise fallback to main image
-    const productImages = product.images && product.images.length > 0 
-        ? product.images 
-        : [product.image, product.image, product.image, product.image];
-
-    // Ensure we have at least 4 images for the gallery
-    while (productImages.length < 4) {
-        productImages.push(product.image);
-    }
+    // Build images array: primary image first, then any additional images (no padding)
+    const productImages = [product.image, ...(product.images || [])].filter(Boolean).slice(0,4);
 
     const rating = product.rating || 0;
     const reviewCount = product.reviews ? product.reviews.length : 0;
+
+    
 
   return (
     <div className='productdisplay'>
         <div className='productdisplay-main'>
             <div className="productdisplay-left">
                 <div className="productdisplay-img-list">
-                    {productImages.slice(0, 4).map((img, index) => (
-                        <img key={index} src={img} alt={`${product.name} ${index + 1}`} />
+                    {productImages.map((img, index) => (
+                        <img 
+                            key={index} 
+                            src={img} 
+                            alt={`${product.name} ${index + 1}`} 
+                            className={index === selectedIndex ? 'active' : ''}
+                            onClick={() => setSelectedIndex(index)}
+                        />
                     ))}
                 </div>
                 <div className="productdisplay-img">
-                    <img className="productdisplay-main-img" src={product.image} alt={product.name} />
+                    <img className="productdisplay-main-img" src={productImages[selectedIndex] || product.image} alt={product.name} />
                 </div>
             </div>
             <div className="productdisplay-right">
                 <h1>{product.name}</h1>
                 <div className="productdisplay-rigt-star">
-                    {renderStars(rating)}
-                    <p>({reviewCount})</p>
+                    {reviewCount > 0 ? (
+                        <>
+                            {renderStars(rating)}
+                            <p>({reviewCount})</p>
+                        </>
+                    ) : (
+                        <p style={{color:'#666'}}>{'No reviews yet'}</p>
+                    )}
                 </div>
                 <div className="productdisplay-right-price">
                     <div className="productdisplay-right-price-old">${product.old_price}</div>
@@ -136,7 +151,11 @@ const ProductDisplay = (props) => {
                         <span>Tags :</span> {product.tags.join(', ')}
                     </p>
                 )}
-                {!product.inStock && (
+                {product.inStock ? (
+                    <p className='productdisplay-in-stock'>
+                        <span>In Stock</span>
+                    </p>
+                ) : (
                     <p className='productdisplay-out-of-stock'>
                         <span>⚠️ Currently Out of Stock</span>
                     </p>

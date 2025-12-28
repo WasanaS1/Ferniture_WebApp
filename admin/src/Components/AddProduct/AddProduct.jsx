@@ -5,7 +5,7 @@ import API_CONFIG from '../../config/api';
 
 const AddProduct = ({ onProductAdded }) => {
 
-    const [image,setimage] = useState(false);//for image hadler
+    const [images, setImages] = useState([]); // for image handler (up to 4)
     const [loading, setLoading] = useState(false);
     const [productDetails, setproductDetails] = useState({
         name:"",
@@ -25,8 +25,22 @@ const AddProduct = ({ onProductAdded }) => {
     const [currentSpecification, setCurrentSpecification] = useState("");
     const [currentTag, setCurrentTag] = useState("");
 
-    const imageHandler = (e)=>{
-        setimage(e.target.files[0]);
+    const imageHandler = (e, index) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        setImages(prev => {
+            const copy = [...prev];
+            copy[index] = file;
+            return copy;
+        });
+    }
+
+    const removeImage = (index) => {
+        setImages(prev => {
+            const copy = [...prev];
+            copy[index] = undefined;
+            return copy;
+        });
     }
     
     const changeHandler = (e)=>{
@@ -92,8 +106,8 @@ const AddProduct = ({ onProductAdded }) => {
                 alert("Please enter valid old price");
                 return;
             }
-            if (!image) {
-                alert("Please select an image");
+            if (!images || images.filter(Boolean).length === 0) {
+                alert("Please select at least one image (max 4)");
                 return;
             }
 
@@ -101,43 +115,58 @@ const AddProduct = ({ onProductAdded }) => {
             console.log(productDetails);
             
             //connect to back end
-            let responseData;
             let product = {
                 ...productDetails,
                 rating: parseFloat(productDetails.rating) || 0,
             };
 
-            let formData = new FormData();
-            formData.append('product',image);
-            
-            //to create image url
-            const uploadResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`,{
+            // Upload each selected image sequentially and collect URLs (skip empty slots)
+            const uploadedUrls = [];
+            for (let i = 0; i < images.length; i++) {
+                const file = images[i];
+                if (!file) continue;
+                let formData = new FormData();
+                formData.append('product', file);
+
+                const uploadResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`, {
+                    method: 'POST',
+                    headers: { Accept: 'application/json' },
+                    body: formData,
+                });
+
+                const uploadResult = await uploadResponse.json();
+                console.log('Upload response for file', i, uploadResult);
+
+                if (uploadResult && uploadResult.success) {
+                    uploadedUrls.push(uploadResult.Image_url);
+                } else {
+                    alert(`Failed to upload image ${file.name || i}`);
+                }
+            }
+
+            if (uploadedUrls.length === 0) {
+                alert('No images were uploaded successfully');
+                return;
+            }
+
+            // primary image is first, rest go to images array
+            product.image = uploadedUrls[0];
+            product.images = uploadedUrls.slice(1);
+
+            console.log("Product to be added:", product);
+
+            // image upload to database
+            const addResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ADD_PRODUCT}`,{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
+                    'Content-Type':'application/json',
                 },
-                body:formData,
+                body:JSON.stringify(product),
             });
-            
-            responseData = await uploadResponse.json();
-            console.log("Upload response:", responseData);
 
-            if(responseData.success){
-                product.image = responseData.Image_url;
-                console.log("Product to be added:", product);
-                
-                //image upload to database
-                const addResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ADD_PRODUCT}`,{
-                    method:'POST',
-                    headers:{
-                        Accept:'application/json',
-                        'Content-Type':'application/json',
-                    },
-                    body:JSON.stringify(product),
-                });
-                
-                const addResult = await addResponse.json();
-                console.log("Add product response:", addResult);
+            const addResult = await addResponse.json();
+            console.log("Add product response:", addResult);
                 
                 if(addResult.success) {
                     alert("Product Added Successfully!");
@@ -155,7 +184,7 @@ const AddProduct = ({ onProductAdded }) => {
                         tags:[],
                         inStock:true
                     });
-                    setimage(false);
+                    setImages([]);
                     setCurrentSpecification("");
                     setCurrentTag("");
                     
@@ -169,9 +198,6 @@ const AddProduct = ({ onProductAdded }) => {
                         console.log("Validation errors:", addResult.errors);
                     }
                 }
-            } else {
-                alert("Failed to upload image");
-            }
         } catch (error) {
             console.error("Error adding product:", error);
             alert("Error adding product. Please try again.");
@@ -257,21 +283,7 @@ const AddProduct = ({ onProductAdded }) => {
             </div>
         </div>
 
-        <div className="addproduct-price">
-            <div className="addproduct-itemfeild">
-                <p>Rating (0-5)</p>
-                <input 
-                    value={productDetails.rating} 
-                    onChange={changeHandler} 
-                    type="number" 
-                    step="0.1"
-                    min="0"
-                    max="5"
-                    name='rating' 
-                    placeholder='Product rating' 
-                />
-            </div>
-        </div>
+        
 
         {/* Specifications Section */}
         <div className="addproduct-itemfeild">
@@ -333,27 +345,26 @@ const AddProduct = ({ onProductAdded }) => {
             </label>
         </div>
 
-         {/* image input  */}
+        {/* image input  - four distinct slots */}
         <div className="addproduct-itemfeild">
-            <label htmlFor="file-input">
-                {   image?(
-                    <img src={URL.createObjectURL(image)} className='addproduct-thumnail-img' alt="Product preview"/>)
-                    :(
-                        <GrCloudUpload className="addproduct-thumnail-img" />
-                    )
-                }
-            </label>
-            <input 
-                onChange={imageHandler} 
-                type="file" 
-                name='image' 
-                id='file-input' 
-                hidden 
-                accept="image/*"
-                required
-            />
+            <p>Product Images (first is primary)</p>
+            <div className="upload-slots">
+                {[0,1,2,3].map(i => (
+                    <div key={i} className="upload-slot" onClick={() => document.getElementById(`file-input-${i}`).click()}>
+                        {images[i] ? (
+                            <div className="thumbnail-wrapper">
+                                <img src={URL.createObjectURL(images[i])} className='addproduct-thumnail-img' alt={`preview-${i}`} />
+                                <button type="button" className="remove-thumb" onClick={(e) => { e.stopPropagation(); removeImage(i); }}>×</button>
+                            </div>
+                        ) : (
+                            <GrCloudUpload className="addproduct-thumnail-img" />
+                        )}
+                        <input id={`file-input-${i}`} onChange={(e) => imageHandler(e, i)} type="file" name={`image-${i}`} accept="image/*" hidden />
+                    </div>
+                ))}
+            </div>
             <p style={{fontSize: '12px', color: '#666', marginTop: '5px'}}>
-                Click to upload product image (required)
+                Click a slot to upload an image (required, up to 4)
             </p>
         </div>
         

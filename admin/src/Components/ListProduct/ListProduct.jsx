@@ -128,7 +128,39 @@ const ListProduct = () => {
                           <span className="rating-number">({product.rating || 0})</span>
                           {product.reviews && product.reviews.length > 0 && <span className="review-count">{product.reviews.length} reviews</span>}
                         </div>
-                        <p className={`stock-status ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
+                        <p
+                          className={`stock-status ${product.inStock ? 'in-stock' : 'out-of-stock'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newState = !product.inStock;
+                            const msg = newState ? 'Mark this product as In Stock?' : 'Mark this product as Out of Stock?';
+                            if (window.confirm(msg)) {
+                              // call backend to toggle stock
+                              fetch(`${API_CONFIG.BASE_URL}/togglestock`, {
+                                method: 'POST',
+                                headers: {
+                                  Accept: 'application/json',
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ id: product.id, inStock: newState }),
+                              })
+                                .then(async (res) => {
+                                  if (!res.ok) throw new Error(`Status ${res.status}`);
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    await fetchInfor();
+                                  } else {
+                                    alert('Failed to update stock');
+                                  }
+                                })
+                                .catch((err) => {
+                                  console.error('Error toggling stock:', err);
+                                  alert('Error toggling stock.');
+                                });
+                            }
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
                           {product.inStock ? 'In Stock' : 'Out of Stock'}
                         </p>
                         <button 

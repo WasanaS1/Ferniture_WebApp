@@ -25,11 +25,9 @@ const generalLimiter = createRateLimiter(
 );
 
 // Strict rate limiter for authentication endpoints
-const authLimiter = createRateLimiter(
-    15 * 60 * 1000, // 15 minutes
-    5, // limit each IP to 5 login attempts per windowMs
-    'Too many authentication attempts from this IP, please try again later.'
-);
+const authLimiter = process.env.NODE_ENV === 'production'
+    ? createRateLimiter(15 * 60 * 1000, 5, 'Too many authentication attempts from this IP, please try again later.')
+    : createRateLimiter(15 * 60 * 1000, 1000, 'Dev: relaxed auth rate limit');
 
 // Product creation rate limiter (for admin operations)
 const productLimiter = createRateLimiter(

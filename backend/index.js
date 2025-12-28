@@ -234,6 +234,39 @@ app.post('/addproduct', productLimiter, productValidation, checkValidationResult
     }
 });
 
+// Toggle stock status for a product (admin)
+app.post('/togglestock', productLimiter, async (req, res) => {
+    try {
+        const { id, inStock } = req.body;
+        if (id === undefined) {
+            return res.status(400).json({ success: false, message: 'Product id is required' });
+        }
+
+        console.log('Toggle stock request body:', req.body);
+        let product = null;
+        const idNum = parseInt(id);
+        if (!isNaN(idNum)) {
+            product = await Product.findOne({ id: idNum });
+        }
+        if (!product) {
+            // try matching by MongoDB _id or string id
+            product = await Product.findOne({ $or: [{ _id: id }, { id: id }, { id: idNum }] });
+        }
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        product.inStock = inStock === undefined ? !product.inStock : Boolean(inStock);
+        await product.save();
+
+        res.json({ success: true, id: product.id, inStock: product.inStock });
+    } catch (error) {
+        console.error('Error toggling stock:', error);
+        res.status(500).json({ success: false, message: 'Error toggling stock' });
+    }
+});
+
 // API to delete product
 app.post('/removeproduct', async (req, res) => {
     try {

@@ -68,19 +68,18 @@
 }
 
 .add-btn {
-    height: 50px;
-    padding: 0 15px;
-    background: #a2d34e;
-    color: black;
+    background: #afea4b;
+    color: #2c2c2c;
     border: none;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 14px;
-    white-space: nowrap;
+    transition: background 0.3s ease;
 }
 
 .add-btn:hover {
-    background: #45a049;
+    background: #9dd63a;
 }
 
 .tags-display {
@@ -139,17 +138,66 @@
     object-fit: contain;
     margin: 10px 0px;
 }
-.addproduct-btn{
-    margin-top: 20px;
-    width: 160px;
-    height: 50px;
-    border-radius: 6px;
-    background: #a2d34e;
+
+.thumbnails-container{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.thumbnail-wrapper{
+    position: relative;
+    display: inline-block;
+}
+.thumbnail-wrapper .remove-thumb{
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #f44336;
+    color: white;
     border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
     cursor: pointer;
-    color: black;
-    font-size: 16px;
+    font-weight: bold;
+    line-height: 18px;
+}
+.thumbnail-wrapper .remove-thumb:hover{
+    background: #d32f2f;
+}
+
+.upload-slots{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+}
+.upload-slot{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    border: 1px dashed #c3c3c3;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fafafa;
+}
+.upload-slot:hover{
+    border-color: #a2d34e;
+}
+.addproduct-btn{
+    background: #afea4b;
+    color: #2c2c2c;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
     font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.addproduct-btn:hover{
+    background: #9dd63a;
 }
 
 .addproduct-btn:disabled {

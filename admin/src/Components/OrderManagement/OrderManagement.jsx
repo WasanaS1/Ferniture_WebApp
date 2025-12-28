@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './OrderManagement.css';
-import { FaEye, FaEdit, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaEye, FaSearch, FaFilter } from 'react-icons/fa';
 import { MdDeliveryDining, MdPending, MdCancel, MdCheckCircle } from 'react-icons/md';
 
 const OrderManagement = () => {
@@ -14,6 +14,51 @@ const OrderManagement = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pagination, setPagination] = useState({});
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [openStatusDropdown, setOpenStatusDropdown] = useState(null);
+    const [modal, setModal] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        orderId: null,
+        newStatus: '',
+        requireTracking: false,
+        trackingValue: '',
+        trackingError: '',
+        requirePaymentConfirm: false,
+        paymentConfirmed: null,
+        paymentError: ''
+    });
+    const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+    
+
+    const showToast = (message, type = 'success', duration = 3000) => {
+        setToast({ visible: true, message, type });
+        setTimeout(() => setToast(prev => ({ ...prev, visible: false })), duration);
+    };
+
+    const getAuthHeaders = () => {
+        let token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+        if (!token) {
+            const userStr = localStorage.getItem('user') || localStorage.getItem('userInfo');
+            if (userStr) {
+                try {
+                    const parsed = JSON.parse(userStr);
+                    token = parsed?.token || parsed?.accessToken || parsed?.authToken;
+                } catch (e) {
+                    // ignore
+                }
+            }
+        }
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
+
+    const hasAuthToken = () => {
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+        if (token) return true;
+        const userStr = localStorage.getItem('user') || localStorage.getItem('userInfo');
+        if (!userStr) return false;
+        try { const parsed = JSON.parse(userStr); return Boolean(parsed?.token || parsed?.accessToken || parsed?.authToken); } catch (e) { return false; }
+    };
 
     useEffect(() => {
         fetchOrders();
@@ -33,6 +78,7 @@ const OrderManagement = () => {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
+                    ...getAuthHeaders()
                 },
             });
 
@@ -54,6 +100,20 @@ const OrderManagement = () => {
     };
 
     const handleViewOrderDetails = async (orderId) => {
+        // If no auth token available, show details from already-loaded orders array
+        if (!hasAuthToken()) {
+            const local = orders.find(o => o.orderId === orderId || o._id === orderId);
+            if (local) {
+                setSelectedOrder(local);
+                setShowOrderDetails(true);
+                return;
+            }
+
+            // If not present locally, inform user that details require authentication
+            showToast('Order details unavailable locally. Please authenticate to fetch details.', 'error');
+            return;
+        }
+
         try {
             setLoading(true);
             const response = await fetch(`http://localhost:4000/order/${orderId}`, {
@@ -61,6 +121,7 @@ const OrderManagement = () => {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
+                    ...getAuthHeaders()
                 },
             });
 
@@ -80,30 +141,39 @@ const OrderManagement = () => {
         }
     };
 
-    const handleUpdateOrderStatus = async (orderId, newStatus, trackingNumber = '') => {
+    const handleUpdateOrderStatus = async (orderId, newStatus, trackingNumber = '', paymentConfirmed) => {
         try {
             setUpdatingStatus(true);
+            const auth = getAuthHeaders();
+
             const response = await fetch('http://localhost:4000/updateorderstatus', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
+                    ...auth
                 },
                 body: JSON.stringify({
                     orderId,
                     status: newStatus,
-                    ...(trackingNumber && { trackingNumber })
+                    ...(trackingNumber && { trackingNumber }),
+                    ...(typeof paymentConfirmed !== 'undefined' && { paymentConfirmed })
                 }),
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
+                // Determine paymentStatus update if provided
+                const newPaymentStatus = typeof paymentConfirmed !== 'undefined'
+                    ? (paymentConfirmed ? 'completed' : 'pending')
+                    : undefined;
+
                 // Update the order in the list
-                setOrders(orders.map(order => 
-                    order.orderId === orderId 
-                        ? { ...order, status: newStatus, ...(trackingNumber && { trackingNumber }) }
-                        : order
+                setOrders(orders.map(o => 
+                    o.orderId === orderId 
+                        ? { ...o, status: newStatus, ...(trackingNumber && { trackingNumber }), ...(typeof newPaymentStatus !== 'undefined' && { paymentStatus: newPaymentStatus }) }
+                        : o
                 ));
                 
                 // Update selected order if it's the same
@@ -111,20 +181,57 @@ const OrderManagement = () => {
                     setSelectedOrder(prev => ({ 
                         ...prev, 
                         status: newStatus, 
-                        ...(trackingNumber && { trackingNumber }) 
+                        ...(trackingNumber && { trackingNumber }),
+                        ...(typeof newPaymentStatus !== 'undefined' && { paymentStatus: newPaymentStatus })
                     }));
                 }
                 
-                alert('Order status updated successfully!');
+                showToast('Order status updated successfully!', 'success');
             } else {
-                alert(data.message || 'Failed to update order status');
+                showToast(data.message || 'Failed to update order status', 'error');
             }
         } catch (error) {
             console.error('Error updating order status:', error);
-            alert('Network error. Please try again.');
+            showToast('Network error. Please try again.', 'error');
         } finally {
             setUpdatingStatus(false);
         }
+    };
+
+    const openConfirmModal = ({ title, message, orderId, newStatus, requireTracking = false, requirePaymentConfirm = false }) => {
+        setModal({
+            visible: true,
+            title,
+            message,
+            orderId,
+            newStatus: newStatus && newStatus.toLowerCase(),
+            requireTracking,
+            trackingValue: '',
+            trackingError: '',
+            requirePaymentConfirm,
+            paymentConfirmed: null,
+            paymentError: ''
+        });
+    };
+
+    const closeModal = () => setModal(prev => ({ ...prev, visible: false }));
+
+    const confirmModal = async () => {
+        if (modal.requireTracking && (!modal.trackingValue || !modal.trackingValue.trim())) {
+            setModal(prev => ({ ...prev, trackingError: 'Please enter a tracking number.' }));
+            return;
+        }
+
+        if (modal.requirePaymentConfirm && modal.paymentConfirmed === null) {
+            setModal(prev => ({ ...prev, paymentError: 'Please confirm payment status.' }));
+            return;
+        }
+
+        const tracking = modal.requireTracking ? modal.trackingValue.trim() : '';
+        const paymentConfirmed = modal.requirePaymentConfirm ? modal.paymentConfirmed : undefined;
+        await handleUpdateOrderStatus(modal.orderId, modal.newStatus, tracking, paymentConfirmed);
+        closeModal();
+        setOpenStatusDropdown(null);
     };
 
     const getStatusIcon = (status) => {
@@ -217,15 +324,16 @@ const OrderManagement = () => {
                                     value={selectedOrder.status}
                                     onChange={(e) => {
                                         const newStatus = e.target.value;
-                                        let trackingNumber = '';
-                                        
-                                        if (newStatus === 'shipped' && !selectedOrder.trackingNumber) {
-                                            trackingNumber = prompt('Enter tracking number (optional):') || '';
-                                        }
-                                        
-                                        if (window.confirm(`Update order status to "${newStatus}"?`)) {
-                                            handleUpdateOrderStatus(selectedOrder.orderId, newStatus, trackingNumber);
-                                        }
+                                        const requireTracking = newStatus === 'shipped';
+                                        const requirePaymentConfirm = newStatus === 'delivered';
+                                        openConfirmModal({
+                                            title: 'Update Order Status',
+                                            message: `Update order status to "${newStatus}"?`,
+                                            orderId: selectedOrder.orderId,
+                                            newStatus,
+                                            requireTracking,
+                                            requirePaymentConfirm
+                                        });
                                     }}
                                     disabled={updatingStatus}
                                     className="status-select"
@@ -281,6 +389,68 @@ const OrderManagement = () => {
                         </div>
                     </div>
                 </div>
+
+                {modal.visible && (
+                    <div className="popup-overlay" onClick={closeModal}>
+                        <div className="popup-message" onClick={(e) => e.stopPropagation()}>
+                            <h4>{modal.title}</h4>
+                            <p>{modal.message}</p>
+                            {modal.requireTracking && (
+                                <div>
+                                    <input
+                                        type="text"
+                                        value={modal.trackingValue}
+                                        onChange={(e) => setModal(prev => ({ ...prev, trackingValue: e.target.value, trackingError: '' }))}
+                                        placeholder="Enter tracking number"
+                                        style={{ width: '100%', padding: '8px', marginBottom: '8px', borderRadius: '6px', border: '1px solid #ddd' }}
+                                        autoFocus
+                                    />
+                                    {modal.trackingError && (
+                                        <div className="tracking-error">{modal.trackingError}</div>
+                                    )}
+                                </div>
+                            )}
+                            {modal.requirePaymentConfirm && (
+                                <div style={{ marginTop: '8px' }}>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Was payment successful?</label>
+                                    <div className="payment-choices">
+                                        <label style={{ marginRight: '12px' }}>
+                                            <input
+                                                type="radio"
+                                                name="paymentConfirm"
+                                                checked={modal.paymentConfirmed === true}
+                                                onChange={() => setModal(prev => ({ ...prev, paymentConfirmed: true, paymentError: '' }))}
+                                            />
+                                            {' '}Yes
+                                        </label>
+                                        <label>
+                                            <input
+                                                type="radio"
+                                                name="paymentConfirm"
+                                                checked={modal.paymentConfirmed === false}
+                                                onChange={() => setModal(prev => ({ ...prev, paymentConfirmed: false, paymentError: '' }))}
+                                            />
+                                            {' '}No
+                                        </label>
+                                    </div>
+                                    {modal.paymentError && (
+                                        <div className="tracking-error">{modal.paymentError}</div>
+                                    )}
+                                </div>
+                            )}
+                            <div className="popup-actions">
+                                <button className="popup-cancel" onClick={closeModal}>Cancel</button>
+                                <button className="popup-confirm" onClick={confirmModal}>Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {toast.visible && (
+                    <div className={`toast ${toast.type}`} role="status">
+                        {toast.message}
+                    </div>
+                )}
             </div>
         );
     }
@@ -373,13 +543,43 @@ const OrderManagement = () => {
                                         <td>{order.items.length}</td>
                                         <td>${order.orderSummary.total.toFixed(2)}</td>
                                         <td>
-                                            <span 
-                                                className="status-badge table-status" 
-                                                style={{backgroundColor: getStatusColor(order.status)}}
-                                            >
-                                                {getStatusIcon(order.status)}
-                                                {order.status.toUpperCase()}
-                                            </span>
+                                            {openStatusDropdown === order.orderId ? (
+                                                <select
+                                                    className="status-select-inline"
+                                                    value={order.status}
+                                                    onChange={(e) => {
+                                                        const newStatus = e.target.value;
+                                                        const requireTracking = newStatus === 'shipped';
+                                                        const requirePaymentConfirm = newStatus === 'delivered';
+                                                        openConfirmModal({
+                                                            title: 'Update Order Status',
+                                                            message: `Update order status to "${newStatus}"?`,
+                                                            orderId: order.orderId,
+                                                            newStatus,
+                                                            requireTracking,
+                                                            requirePaymentConfirm
+                                                        });
+                                                    }}
+                                                    onBlur={() => setOpenStatusDropdown(null)}
+                                                    autoFocus
+                                                >
+                                                    <option value="pending">Pending</option>
+                                                    <option value="confirmed">Confirmed</option>
+                                                    <option value="processing">Processing</option>
+                                                    <option value="shipped">Shipped</option>
+                                                    <option value="delivered">Delivered</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                            ) : (
+                                                <span 
+                                                    className="status-badge table-status" 
+                                                    style={{backgroundColor: getStatusColor(order.status), cursor: 'pointer'}}
+                                                    onClick={(e) => { e.stopPropagation(); setOpenStatusDropdown(order.orderId); }}
+                                                >
+                                                    {getStatusIcon(order.status)}
+                                                    {order.status.toUpperCase()}
+                                                </span>
+                                            )}
                                         </td>
                                         <td>
                                             <span className={`payment-status ${order.paymentStatus}`}>
@@ -395,34 +595,74 @@ const OrderManagement = () => {
                                                 >
                                                     <FaEye />
                                                 </button>
-                                                <button
-                                                    className="edit-btn"
-                                                    onClick={() => {
-                                                        const newStatus = prompt(
-                                                            `Current status: ${order.status}\nEnter new status (pending/confirmed/processing/shipped/delivered/cancelled):`
-                                                        );
-                                                        
-                                                        if (newStatus && ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].includes(newStatus.toLowerCase())) {
-                                                            let trackingNumber = '';
-                                                            if (newStatus.toLowerCase() === 'shipped' && !order.trackingNumber) {
-                                                                trackingNumber = prompt('Enter tracking number (optional):') || '';
-                                                            }
-                                                            handleUpdateOrderStatus(order.orderId, newStatus.toLowerCase(), trackingNumber);
-                                                        } else if (newStatus) {
-                                                            alert('Invalid status. Please enter: pending, confirmed, processing, shipped, delivered, or cancelled');
-                                                        }
-                                                    }}
-                                                    title="Update Status"
-                                                    disabled={updatingStatus}
-                                                >
-                                                    <FaEdit />
-                                                </button>
                                             </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+                    )}
+
+                    {modal.visible && (
+                        <div className="popup-overlay" onClick={closeModal}>
+                            <div className="popup-message" onClick={(e) => e.stopPropagation()}>
+                                <h4>{modal.title}</h4>
+                                <p>{modal.message}</p>
+                                {modal.requireTracking && (
+                                    <div>
+                                        <input
+                                            type="text"
+                                            value={modal.trackingValue}
+                                            onChange={(e) => setModal(prev => ({ ...prev, trackingValue: e.target.value, trackingError: '' }))}
+                                            placeholder="Enter tracking number"
+                                            style={{ width: '100%', padding: '8px', marginBottom: '8px', borderRadius: '6px', border: '1px solid #ddd' }}
+                                            autoFocus
+                                        />
+                                        {modal.trackingError && (
+                                            <div className="tracking-error">{modal.trackingError}</div>
+                                        )}
+                                    </div>
+                                )}
+                                {modal.requirePaymentConfirm && (
+                                    <div style={{ marginTop: '8px' }}>
+                                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Was payment successful?</label>
+                                        <div className="payment-choices">
+                                            <label style={{ marginRight: '12px' }}>
+                                                <input
+                                                    type="radio"
+                                                    name="paymentConfirm"
+                                                    checked={modal.paymentConfirmed === true}
+                                                    onChange={() => setModal(prev => ({ ...prev, paymentConfirmed: true, paymentError: '' }))}
+                                                />
+                                                {' '}Yes
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name="paymentConfirm"
+                                                    checked={modal.paymentConfirmed === false}
+                                                    onChange={() => setModal(prev => ({ ...prev, paymentConfirmed: false, paymentError: '' }))}
+                                                />
+                                                {' '}No
+                                            </label>
+                                        </div>
+                                        {modal.paymentError && (
+                                            <div className="tracking-error">{modal.paymentError}</div>
+                                        )}
+                                    </div>
+                                )}
+                                <div className="popup-actions">
+                                    <button className="popup-cancel" onClick={closeModal}>Cancel</button>
+                                    <button className="popup-confirm" onClick={confirmModal}>Confirm</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {toast.visible && (
+                        <div className={`toast ${toast.type}`} role="status">
+                            {toast.message}
+                        </div>
                     )}
 
                     {pagination.totalPages > 1 && (

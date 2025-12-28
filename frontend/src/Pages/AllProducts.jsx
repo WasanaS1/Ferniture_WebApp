@@ -14,20 +14,24 @@ const AllProducts = () => {
         <h1>All Products</h1>
         <hr />
         <div className='products'>
-          {all_product.map((item, i) => {
-            return <Item 
-              key={i} 
-              id={item.id} 
-              name={item.name} 
-              image={item.image} 
-              new_price={item.new_price} 
-              old_price={item.old_price}
-              category={item.category}
-              rating={item.rating}
-              reviews={item.reviews}
-              inStock={item.inStock}
-            />
-          })}
+          {Array.isArray(all_product) && all_product.length > 0 ? (
+            all_product.map((item, i) => {
+              return <Item 
+                key={i} 
+                id={item.id} 
+                name={item.name} 
+                image={item.image} 
+                new_price={item.new_price} 
+                old_price={item.old_price}
+                category={item.category}
+                rating={item.rating}
+                reviews={item.reviews}
+                inStock={item.inStock}
+              />
+            })
+          ) : (
+            <p>No products available.</p>
+          )}
         </div>
       </div>
     </div>
