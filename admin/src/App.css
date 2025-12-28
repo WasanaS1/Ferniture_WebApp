@@ -246,6 +246,8 @@
   overflow-x: hidden;
 }
 
+/* No sidebar: layout uses full width */
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .add-product-btn {

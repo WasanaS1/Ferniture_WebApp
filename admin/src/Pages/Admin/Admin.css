@@ -1,6 +1,7 @@
 .admin{
     display: flex;
-    height: 100vh;
+    flex: 1;
+    min-height: 0; /* allow children to handle scrolling */
 }
 @media(max-width:800px){
     .admin{

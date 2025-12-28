@@ -2,10 +2,11 @@
     box-sizing: border-box;
     width: 100%;
     max-width: 800px;
-    padding: 0px 46px;
-    margin: 20px 30px;
+    padding: 10px 46px;
+    margin: 40px auto; /* center horizontally */
     border-radius: 6px;
     background: white;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
 }
 .addproduct-itemfeild{
     width: 100%;
@@ -69,8 +70,8 @@
 .add-btn {
     height: 50px;
     padding: 0 15px;
-    background: #4CAF50;
-    color: white;
+    background: #a2d34e;
+    color: black;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -93,17 +94,17 @@
     display: inline-flex;
     align-items: center;
     background: #e8f4f8;
-    color: #2196F3;
+    color: #a2d34e;
     padding: 5px 10px;
     border-radius: 20px;
     font-size: 12px;
-    border: 1px solid #2196F3;
+    border: 1px solid #a2d34e;
 }
 
 .remove-tag {
     background: none;
     border: none;
-    color: #2196F3;
+    color: #a2d34e;
     cursor: pointer;
     margin-left: 5px;
     font-size: 16px;
@@ -143,12 +144,12 @@
     width: 160px;
     height: 50px;
     border-radius: 6px;
-    background: #6079ff;
+    background: #a2d34e;
     border: none;
     cursor: pointer;
-    color: white;
+    color: black;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .addproduct-btn:disabled {
